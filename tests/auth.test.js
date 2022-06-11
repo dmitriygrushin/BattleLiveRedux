@@ -1,9 +1,6 @@
 const request = require('supertest');
-const app = require('./app');
-const { pool } = require('./dbConfig');
-//const util = require('util');
-//var server = request.agent('http://localhost:4000');
-//const request = require('superagent');
+const app = require('../app');
+const { pool } = require('../dbConfig');
 
 afterAll(async () => {
     pool.end();
@@ -127,31 +124,3 @@ describe('Authentication: Register | POST /users/register', () => {
         });
     });
 });
-
-
-
-// superagent persistence | 
-/*
-describe('Authentication: Login | POST /users/login', () => {
-    const loginUrl = '/users/login';
-    const successfulLoginUrl = '/users/dashboard';
-    const failedLoginUrl = '/users/login';
-    const userEmail = 'jane@gmail.com';
-    const userRealPassword = '123456';
-    const userFakePassword = '_fakePassword';
-    const user1 = request.agent();
-
-    describe('given a username and password', () => {
-        test('superagent test', async () => {
-            user1
-            .post('http://localhost:4000/users/login')
-            .send({ email: userEmail, password: userRealPassword })
-            .end(function(err, res) {
-                // user1 will manage its own cookies
-                // res.redirects contains an Array of redirects
-                console.log(util.inspect(res.redirects, {showHidden: false, depth: null, colors: true}))
-            });
-        })
-    })
-})
-*/
