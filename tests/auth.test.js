@@ -7,7 +7,7 @@ afterAll(async () => {
 });
 
 const loginUrl = '/users/login';
-const userEmail = 'jane@gmail.com';
+const userEmail = 'loginTestUser@gmail.com';
 const userRealPassword = '123456';
 const successfulLoginUrl = '/users/dashboard';
 
