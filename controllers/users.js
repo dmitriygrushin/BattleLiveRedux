@@ -39,11 +39,11 @@ module.exports.register = async (req, res) => {
         let hashedPassword = await bcrypt.hash(password, 10);
         console.log(hashedPassword);
 
-        const results = await pool.query(`SELECT * FROM user_account WHERE email = $1`, [email]) ;
+        const results = await pool.query(`SELECT * FROM user_account WHERE email = $1 or username = $2`, [email, username]) ;
         console.log(results.rows);
 
         if (results.rows.length > 0) {
-            errors.push({message: 'Email already registered'});
+            errors.push({message: 'Email or Username already registered'});
             res.render('register', { errors });
         } else {
             const results = await pool.query(`INSERT INTO user_account (username, email, password) VALUES ($1, $2, $3) RETURNING id, password`, [username, email, hashedPassword]);
