@@ -114,13 +114,35 @@ describe('Authentication: Register | POST /users/register', () => {
                 password2: testPassword
             })
             expect(response.statusCode).toEqual(200); 
-            await pool.query(`DELETE FROM user_account WHERE email = 'testEmail@gmail.com'`); // clean up db to test again
+        });
+
+        // SAD - by this point the testUser has already been registered by the HAPPY test - using an existing EMAIL
+        test(`should redirect to ${failedRegisterUrl} if registration FAILED - used already exists`, async () => {
+            const response = await request(app).post(registerUrl).type('form').send({
+                username: 'nonExistingUsername', 
+                email: testEmail, // this email is already in use
+                password: testPassword,
+                password2: testPassword
+            })
+            expect(response.statusCode).toEqual(200); 
+        });
+
+        // SAD - by this point the testUser has already been registered by the HAPPY test - using an existing USERNAME
+        test(`should redirect to ${failedRegisterUrl} if registration FAILED - used already exists`, async () => {
+            const response = await request(app).post(registerUrl).type('form').send({
+                username: testUsername, // this username is already in use
+                email: 'nonExistingEmail@gmail.com',
+                password: testPassword,
+                password2: testPassword
+            })
+            expect(response.statusCode).toEqual(200); 
         });
 
         // SAD
         test(`should redirect to ${failedRegisterUrl} if registration FAILED - used already exists`, async () => {
             const response = await request(app).post(registerUrl).type('form').send({ })
             expect(response.statusCode).toEqual(422); 
+            await pool.query(`DELETE FROM user_account WHERE email = 'testEmail@gmail.com'`); // clean up db to test again
         });
     });
 });
