@@ -7,11 +7,11 @@ function initialize(passport) {
         try {
             const results = await pool.query(`SELECT * FROM user_account WHERE email = $1`, [email]);
 
-            console.log(results.rows);
+            //console.log(results.rows);
 
             if (results.rows.length > 0) {
                 const user = results.rows[0];
-                console.log(`user reached here: ${user}`);
+                //console.log(`user reached here: ${user}`);
                 bcrypt.compare(password, user.password, (err, isMatch) => {
                     if (err) throw err;
                     if (isMatch) return done(null, user);

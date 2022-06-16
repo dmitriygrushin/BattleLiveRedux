@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const { pool } = require('../dbConfig');
+const util = require('util');
 
 module.exports.registerView = (req, res) => {
     res.render('register');
@@ -10,6 +11,7 @@ module.exports.loginView = (req, res) => {
 };
 
 module.exports.dashboardView = (req, res) => {
+    //console.log(util.inspect(req.user, {showHidden: false, depth: null, colors: true}));
     res.render('dashboard', {user: req.user.username});
 };
 
@@ -23,7 +25,7 @@ module.exports.logout = (req, res, next) => {
 
 module.exports.register = async (req, res) => {
     let { username, email, password, password2 } = req.body;
-    console.log({ username, email, password, password2 });
+    //console.log({ username, email, password, password2 });
 
     let errors = [];
 
@@ -39,7 +41,7 @@ module.exports.register = async (req, res) => {
         let hashedPassword = await bcrypt.hash(password, 10);
         console.log(hashedPassword);
 
-        const results = await pool.query(`SELECT * FROM user_account WHERE email = $1 or username = $2`, [email, username]) ;
+        const results = await pool.query(`SELECT * FROM user_account WHERE email = $1 or username = $2`, [email, username]);
         console.log(results.rows);
 
         if (results.rows.length > 0) {

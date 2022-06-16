@@ -5,12 +5,13 @@ const flash = require('express-flash');
 const ejsMate = require('ejs-mate');
 const path = require('path');
 const passport = require('passport');
-const { checkNotAuthenticated } = require('./middleware');
+const { checkNotAuthenticated } = require('./middleware/authentication');
 
 const initializePassport = require('./passportConfig');
 initializePassport(passport);
 
 const userRoutes = require('./routes/users');
+const roomRoutes = require('./routes/rooms');
 
 /* Middleware */
 app.engine('ejs', ejsMate); 
@@ -27,8 +28,9 @@ app.use(flash());
 
 // Routes
 app.use('/users', userRoutes);
+app.use('/rooms', roomRoutes);
 
-app.get('/', checkNotAuthenticated, (req, res) => {
+app.get('/', (req, res) => {
     res.render('index');
 });
 

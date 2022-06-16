@@ -3,6 +3,7 @@ const app = require('../app');
 const { pool } = require('../dbConfig');
 
 afterAll(async () => {
+    await pool.query(`DELETE FROM user_account WHERE email = 'testEmail@gmail.com'`); // clean up db to test again
     pool.end();
 });
 
@@ -142,7 +143,6 @@ describe('Authentication: Register | POST /users/register', () => {
         test(`should redirect to ${failedRegisterUrl} if registration FAILED - used already exists`, async () => {
             const response = await request(app).post(registerUrl).type('form').send({ })
             expect(response.statusCode).toEqual(422); 
-            await pool.query(`DELETE FROM user_account WHERE email = 'testEmail@gmail.com'`); // clean up db to test again
         });
     });
 });

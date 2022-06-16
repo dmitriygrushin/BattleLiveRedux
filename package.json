@@ -27,6 +27,7 @@
   "devDependencies": {
     "jest": "^28.1.0",
     "should": "^13.2.3",
-    "supertest": "^6.2.3"
+    "supertest": "^6.2.3",
+    "supertest-session": "^4.1.0"
   }
 }
