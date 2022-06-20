@@ -13,7 +13,9 @@ const createRoomUrl = '/rooms/create',
 const successfulCreateRoomRedirect = '/users/dashboard', 
     successfulLoginRedirect = '/users/dashboard';
 
-const completeCreateRoomFormObj = {description: 'generic description'};
+const userAlreadyCreatedRoomRedirect = '/';
+
+const completeCreateRoomFormObj = {description: 'generic description from create test'};
 
 let basicSession = null;
  
@@ -86,6 +88,7 @@ describe('Room CRUD: Create | POST /rooms/create', () => {
         // HAPPY - testing if the user didn't create a room - all attempts should be successfully unsuccessful
         test(`should receive false if the user didn't create a room`, async () => {
             const results = await pool.query(`SELECT * FROM room WHERE user_id = 1`);
+            console.log(results.rows[0]);
             expect(results.rows.length > 0).toEqual(false);
         });
 
@@ -103,10 +106,10 @@ describe('Room CRUD: Create | POST /rooms/create', () => {
         });
 
         // SAD
-        test('should redirect to / - complete form but a room from this user exists', async () => {
+        test(`should redirect to ${userAlreadyCreatedRoomRedirect} - complete form but a room from this user exists`, async () => {
             const response = await authenticatedSession.post(createRoomUrl).type('form').send(completeCreateRoomFormObj);
             expect(response.statusCode).toEqual(302);
-            expect(response.headers.location).toEqual('/');
+            expect(response.headers.location).toEqual(userAlreadyCreatedRoomRedirect);
         });
     });
 });

@@ -7,25 +7,33 @@
 
     <div class="collapse navbar-collapse" id="navbarColor01">
       <ul class="navbar-nav me-auto">
-        <li class="nav-item">
-          <a class="nav-link" href="/users/login">Login</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/users/register">Register</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/users/logout">Logout</a>
-        </li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Room Options</a>
-          <div class="dropdown-menu">
-            <a class="dropdown-item" href="/rooms/create">Create</a>
-            <a class="dropdown-item" href="/rooms/edit">Edit</a>
-            <a class="dropdown-item" href="/rooms/delete">Delete</a>
-            <div class="dropdown-divider"></div>
-            <a class="dropdown-item" href="/rooms/index">View All Rooms</a>
-          </div>
-        </li>
+          <% if (!authenticatedUser) { %> 
+            <li class="nav-item">
+              <a class="nav-link" href="/users/login">Login</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/users/register">Register</a>
+            </li>
+          <% } %> 
+          <% if (authenticatedUser) { %> 
+          <li class="nav-item">
+            <a class="nav-link" href="/users/logout">Logout</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Room Options</a>
+              <div class="dropdown-menu">
+                <% if (!authenticatedUserRoomId) { %> 
+                  <a class="dropdown-item" href="/rooms/create">Create</a>
+                <% } %> 
+                <% if (authenticatedUserRoomId) { %> 
+                  <a class="dropdown-item" href="/rooms/<%= authenticatedUserRoomId %>/edit">Edit</a>
+                  <a class="dropdown-item" href="/rooms/<%= authenticatedUserRoomId %>/delete">Delete</a>
+                <% } %> 
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="/rooms/index">View All Rooms</a>
+              </div>
+            </li>
+          <% } %> 
       </ul>
     </div>
   </div>

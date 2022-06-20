@@ -1,5 +1,5 @@
 <% layout('layouts/boilerplate') %> 
-<h1>Welcome <%= user.charAt(0).toUpperCase() + user.slice(1) %> </h1> 
+<h1>Welcome <%= authenticatedUser.username.toUpperCase() %> </h1> 
 
 <ul>
     <% if (messages.success_msg) {%> 

@@ -12,7 +12,7 @@ module.exports.loginView = (req, res) => {
 
 module.exports.dashboardView = (req, res) => {
     //console.log(util.inspect(req.user, {showHidden: false, depth: null, colors: true}));
-    res.render('dashboard', {user: req.user.username});
+    res.render('dashboard');
 };
 
 module.exports.logout = (req, res, next) => {
@@ -39,17 +39,17 @@ module.exports.register = async (req, res) => {
     } else {
         // form validation passed
         let hashedPassword = await bcrypt.hash(password, 10);
-        console.log(hashedPassword);
+        //console.log(hashedPassword);
 
         const results = await pool.query(`SELECT * FROM user_account WHERE email = $1 or username = $2`, [email, username]);
-        console.log(results.rows);
+        //console.log(results.rows);
 
         if (results.rows.length > 0) {
             errors.push({message: 'Email or Username already registered'});
             res.render('register', { errors });
         } else {
             const results = await pool.query(`INSERT INTO user_account (username, email, password) VALUES ($1, $2, $3) RETURNING id, password`, [username, email, hashedPassword]);
-            console.log(results.rows);
+            //console.log(results.rows);
             req.flash('success_msg', 'You are now registered please log in');
             res.redirect('/users/login');
         }

@@ -10,11 +10,11 @@ module.exports.create = async (req, res) => {
     const { description } = req.body;
     const userId = req.user.id; // use userId to associate room foreign key with the userId that created it
 
-    // error checking
+    // form error checking
     if (description == undefined) return res.status(422).send('Fields CANNOT be UNDEFINED');
     if (!description) {
         req.flash('error', 'Can NOT leave the description field empty');
-        // if not returned then consecutive requests during testing will create an empty description
+        // NOTE: if not returned then consecutive requests during testing will create an empty description
         return res.redirect('/rooms/create'); 
     }
 
@@ -35,9 +35,29 @@ module.exports.create = async (req, res) => {
     res.redirect('/users/dashboard');
 }
 
-
 // Read
 
 // Update
+module.exports.editView = async (req, res) => {
+    const room = await pool.query(`SELECT * FROM room WHERE id = $1`, [req.params.id]);
+    res.render('rooms/edit', { room : room.rows[0]});
+}
+
+module.exports.edit = async (req, res) => {
+    const { id } = req.params;
+    const { description } = req.body;
+
+    // form error checking
+    if (description == undefined) return res.status(422).send('Fields CANNOT be UNDEFINED');
+    if (!description) {
+        req.flash('error', 'Can NOT leave the description field empty');
+        // NOTE: if not returned then consecutive requests during testing will create an empty description
+        return res.redirect(`/rooms/${id}/edit`); 
+    }
+
+    await pool.query(`UPDATE room SET description = $1 WHERE id = $2`, [description, id]);
+    req.flash('success_msg', 'You edited your room!');
+    res.redirect('/users/dashboard');
+}
 
 // Delete

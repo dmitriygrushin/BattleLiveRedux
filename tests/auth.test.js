@@ -1,6 +1,6 @@
 const request = require('supertest');
 const app = require('../app');
-const { pool } = require('../dbConfig');
+const { pool } = require('../dbConfig'); // TODO: fix logout. Add express session. Refactor auth.
 
 afterAll(async () => {
     await pool.query(`DELETE FROM user_account WHERE email = 'testEmail@gmail.com'`); // clean up db to test again

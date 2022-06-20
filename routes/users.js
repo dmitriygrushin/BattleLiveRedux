@@ -6,11 +6,13 @@ const { checkAuthenticated, checkNotAuthenticated } = require('../middleware/aut
 const catchAsyncErrors = require('../utilities/catchAsyncErrors');
 
 router.get('/register', checkNotAuthenticated, users.registerView);
+router.post('/register', checkNotAuthenticated, catchAsyncErrors(users.register));
+
 router.get('/login', checkNotAuthenticated, users.loginView);
+router.post('/login', checkNotAuthenticated, passport.authenticate('local', { successRedirect: '/users/dashboard', failureRedirect: '/users/login', failureFlash: true }));
+
 router.get('/dashboard', checkAuthenticated, users.dashboardView);
 
 router.get('/logout', checkAuthenticated, users.logout);
-router.post('/register', checkNotAuthenticated, catchAsyncErrors(users.register));
-router.post('/login', checkNotAuthenticated, passport.authenticate('local', { successRedirect: '/users/dashboard', failureRedirect: '/users/login', failureFlash: true }));
 
 module.exports = router;
