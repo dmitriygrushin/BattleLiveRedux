@@ -31,7 +31,7 @@ module.exports.create = async (req, res) => {
     await pool.query(`INSERT INTO room(description, user_id) VALUES($1, $2)`, [description, userId]);
 
     // flash and redirect
-    req.flash('success_msg', 'You created a room!');
+    req.flash('success_msg', 'You CREATED a room!');
     res.redirect('/users/dashboard');
 }
 
@@ -55,9 +55,23 @@ module.exports.edit = async (req, res) => {
         return res.redirect(`/rooms/${id}/edit`); 
     }
 
+    // TODO: changed the updates and delete query to also include the user_id when refactoring
     await pool.query(`UPDATE room SET description = $1 WHERE id = $2`, [description, id]);
-    req.flash('success_msg', 'You edited your room!');
+    req.flash('success_msg', 'You EDITED your room!');
     res.redirect('/users/dashboard');
 }
 
 // Delete
+module.exports.deleteView = async (req, res) => {
+    const room = await pool.query(`SELECT * FROM room WHERE id = $1`, [req.params.id]);
+    res.render('rooms/delete', { room : room.rows[0]});
+}
+
+module.exports.delete = async (req, res) => {
+    const { id } = req.params;
+
+    await pool.query(`DELETE FROM room WHERE id = $1 AND user_id = $2`, [id, req.user.id]);
+
+    req.flash('success_msg', 'You have DELETED your room');
+    res.redirect('/users/dashboard');
+}

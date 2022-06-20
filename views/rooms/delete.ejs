@@ -1,0 +1,26 @@
+<% layout('layouts/boilerplate') %> 
+
+<form action="/rooms/<%= room.id %>/delete?_method=DELETE" method="POST" class="col-lg-6 offset-lg-3">
+
+    <ul>
+        <% if (messages.success_msg) {%> 
+            <li><%= messages.success_msg %></li>
+        <% } %> 
+    </ul>
+
+    <ul>
+        <% if (messages.error) {%> 
+            <li><%= messages.error %></li>
+        <% } %> 
+    </ul>
+
+    <h1>Delete Room</h1> 
+    <div class="form-floating mb-3">
+        <input type="text" name="description" class="form-control" id="floatingInput" placeholder="This room is really ..." readonly>
+        <label for="floatingInput"><%= room.description %></label>
+    </div>
+
+    <span>
+        <input type="submit" value="Delete Room" class="btn btn-success btn-lg"> 
+    </span>
+</form>
