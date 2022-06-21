@@ -1,19 +1,6 @@
 <% layout('layouts/boilerplate') %> 
 
 <form action="/users/login" method="POST" class="col-lg-6 offset-lg-3">
-
-    <ul>
-        <% if (messages.success_msg) {%> 
-            <li><%= messages.success_msg %></li>
-        <% } %> 
-    </ul>
-
-    <ul>
-        <% if (messages.error) {%> 
-            <li><%= messages.error %></li>
-        <% } %> 
-    </ul>
-
     <h1>Login</h1> 
     <div class="form-floating mb-3">
         <input type="email" name="email" class="form-control" id="floatingInput" placeholder="name@example.com" required>

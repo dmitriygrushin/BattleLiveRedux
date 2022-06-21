@@ -1,14 +1,2 @@
 <% layout('layouts/boilerplate') %> 
 <h1>Welcome <%= authenticatedUser.username.toUpperCase() %> </h1> 
-
-<ul>
-    <% if (messages.success_msg) {%> 
-        <li><%= messages.success_msg %></li>
-    <% } %> 
-</ul>
-
-<ul>
-    <% if (messages.error) {%> 
-        <li><%= messages.error %></li>
-    <% } %> 
-</ul>
