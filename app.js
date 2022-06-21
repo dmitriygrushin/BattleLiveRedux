@@ -30,6 +30,7 @@ app.use(flash());
 
 app.use(async (req, res, next) => {
     res.locals.authenticatedUser = req.user;
+    res.locals.currentUrl = req.url;
     if (req.user) {
         const userRoomId = await hasRoom(req.user.id);
         res.locals.authenticatedUserRoomId = (userRoomId == undefined) ? false : userRoomId.id; 

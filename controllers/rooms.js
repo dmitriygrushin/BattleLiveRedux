@@ -36,6 +36,22 @@ module.exports.create = async (req, res) => {
 }
 
 // Read
+module.exports.rapRoomView = async (req, res) => {
+    const roomId = req.params.id;
+    const room = await pool.query(
+        `SELECT user_account.username, room.id AS room_id, room.description, room.user_id 
+        FROM user_account JOIN room ON user_account.id = room.user_id 
+        WHERE room.id = $1`, [roomId]);
+
+    if (room.rows.length != 1) {
+        req.flash('error', 'This room does NOT exist.');
+        return res.redirect('/users/dashboard');
+    }
+
+    console.log(room.rows[0].username, room.rows[0].room_id, room.rows[0].description, room.rows[0].user_id);
+    res.render('rooms/rapRoom', {room : room.rows[0], owner : room.rows[0].username});
+}
+
 
 // Update
 module.exports.editView = async (req, res) => {

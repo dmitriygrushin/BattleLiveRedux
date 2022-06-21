@@ -28,9 +28,9 @@
                 <% if (authenticatedUserRoomId) { %> 
                   <a class="dropdown-item" href="/rooms/<%= authenticatedUserRoomId %>/edit">Edit</a>
                   <a class="dropdown-item" href="/rooms/<%= authenticatedUserRoomId %>/delete">Delete</a>
-                <% } %> 
                 <div class="dropdown-divider"></div>
-                <a class="dropdown-item" href="/rooms/index">View All Rooms</a>
+                <a class="dropdown-item" href="/rooms/<%= authenticatedUserRoomId %>/rapRoom">View Your Room</a>
+                <% } %> 
               </div>
             </li>
           <% } %> 

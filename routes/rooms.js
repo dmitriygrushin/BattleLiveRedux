@@ -11,6 +11,7 @@ router.get('/create', checkAuthenticated, rooms.createView);
 router.post('/create', checkAuthenticated, catchAsyncErrors(rooms.create));
 
 // Read
+router.get('/:id/rapRoom', checkAuthenticated, rooms.rapRoomView);
 
 // Update
 router.get('/:id/edit', checkAuthenticated, isRoomOwner, rooms.editView);

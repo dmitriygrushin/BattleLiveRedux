@@ -1,0 +1,17 @@
+<% layout('layouts/boilerplate') %> 
+
+<ul>
+    <% if (messages.success_msg) {%> 
+        <li><%= messages.success_msg %></li>
+    <% } %> 
+</ul>
+
+<ul>
+    <% if (messages.error) {%> 
+        <li><%= messages.error %></li>
+    <% } %> 
+</ul>
+
+<h1>Welcome to <%= owner.toUpperCase() %>'s  Room</h1> 
+
+
