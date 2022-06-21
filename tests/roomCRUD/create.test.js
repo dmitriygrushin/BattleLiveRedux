@@ -88,7 +88,6 @@ describe('Room CRUD: Create | POST /rooms/create', () => {
         // HAPPY - testing if the user didn't create a room - all attempts should be successfully unsuccessful
         test(`should receive false if the user didn't create a room`, async () => {
             const results = await pool.query(`SELECT * FROM room WHERE user_id = 1`);
-            console.log(results.rows[0]);
             expect(results.rows.length > 0).toEqual(false);
         });
 

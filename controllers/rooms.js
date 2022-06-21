@@ -14,7 +14,6 @@ module.exports.create = async (req, res) => {
     if (description == undefined) return res.status(422).send('Fields CANNOT be UNDEFINED');
     if (!description) {
         req.flash('error', 'Can NOT leave the description field empty');
-        // NOTE: if not returned then consecutive requests during testing will create an empty description
         return res.redirect('/rooms/create'); 
     }
 
@@ -48,7 +47,6 @@ module.exports.rapRoomView = async (req, res) => {
         return res.redirect('/users/dashboard');
     }
 
-    console.log(room.rows[0].username, room.rows[0].room_id, room.rows[0].description, room.rows[0].user_id);
     res.render('rooms/rapRoom', {room : room.rows[0], owner : room.rows[0].username});
 }
 
@@ -71,8 +69,7 @@ module.exports.edit = async (req, res) => {
         return res.redirect(`/rooms/${id}/edit`); 
     }
 
-    // TODO: changed the updates and delete query to also include the user_id when refactoring
-    await pool.query(`UPDATE room SET description = $1 WHERE id = $2`, [description, id]);
+    await pool.query(`UPDATE room SET description = $1 WHERE id = $2 and user_id = $3`, [description, id, req.user.id]);
     req.flash('success_msg', 'You EDITED your room!');
     res.redirect('/users/dashboard');
 }
@@ -80,14 +77,12 @@ module.exports.edit = async (req, res) => {
 // Delete
 module.exports.deleteView = async (req, res) => {
     const room = await pool.query(`SELECT * FROM room WHERE id = $1`, [req.params.id]);
-    res.render('rooms/delete', { room : room.rows[0]});
+    res.render('rooms/delete', { room : room.rows[0] });
 }
 
 module.exports.delete = async (req, res) => {
     const { id } = req.params;
-
     await pool.query(`DELETE FROM room WHERE id = $1 AND user_id = $2`, [id, req.user.id]);
-
     req.flash('success_msg', 'You have DELETED your room');
     res.redirect('/users/dashboard');
 }
