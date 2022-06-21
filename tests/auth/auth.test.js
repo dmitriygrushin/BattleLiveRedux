@@ -1,6 +1,6 @@
 const request = require('supertest');
-const app = require('../app');
-const { pool } = require('../dbConfig'); // TODO: fix logout. Add express session. Refactor auth.
+const app = require('../../app');
+const { pool } = require('../../dbConfig');
 
 afterAll(async () => {
     await pool.query(`DELETE FROM user_account WHERE email = 'testEmail@gmail.com'`); // clean up db to test again
@@ -48,37 +48,6 @@ describe('Authentication: Login | POST /users/login', () => {
             expect(response.headers.location).toEqual(failedLoginUrl);
         });
 
-    });
-
-});
-
-describe('Authentication: Logout | GET /users/logout', () => {
-    const logoutUrl = '/users/logout';
-    const successfulLogoutRedirect = '/users/login';
-
-    describe('Given the user is Authenticated', () => {
-        // HAPPY
-        test(`should redirect to ${successfulLoginUrl} if logout SUCCEEDED`, async () => {
-            const response = await request(app).post(loginUrl).type('form').send({
-                email: userEmail,
-                password: userRealPassword // correct password
-            })
-            expect(response.statusCode).toEqual(302);
-            expect(response.headers.location).toEqual(successfulLoginUrl);
-
-            const loggedInResponse = await request(app).get(logoutUrl);
-            expect(loggedInResponse.statusCode).toEqual(302);
-            expect(loggedInResponse.headers.location).toEqual(successfulLogoutRedirect);
-        });
-    });
-
-    describe('Given the user is NOT Authenticated', () => {
-        // SAD - use manually inputs the url in the browser or something like postman
-        test(`should redirect to ${successfulLoginUrl} if /users/logout route failed`, async () => {
-            const loggedInResponse = await request(app).get(logoutUrl);
-            expect(loggedInResponse.statusCode).toEqual(302);
-            expect(loggedInResponse.headers.location).toEqual(successfulLogoutRedirect);
-        });
     });
 
 });
