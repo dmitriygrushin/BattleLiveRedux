@@ -21,5 +21,4 @@ router.put('/:id/edit', checkAuthenticated, isRoomOwner, catchAsyncErrors(rooms.
 router.get('/:id/delete', checkAuthenticated, isRoomOwner, rooms.deleteView);
 router.delete('/:id/delete', checkAuthenticated, isRoomOwner, catchAsyncErrors(rooms.delete));
 
-
 module.exports = router;

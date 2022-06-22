@@ -47,7 +47,7 @@ module.exports.rapRoomView = async (req, res) => {
         return res.redirect('/users/dashboard');
     }
 
-    res.render('rooms/rapRoom', {room : room.rows[0], owner : room.rows[0].username});
+    res.render('rooms/rapRoom', {room : room.rows[0], owner : room.rows[0].username, roomId : room.rows[0].room_id});
 }
 
 
