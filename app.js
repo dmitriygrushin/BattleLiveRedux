@@ -3,7 +3,7 @@ const app = express();
 
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
-const { socketIo } = require('./utilities/socket.io');
+const { socketIo } = require('./utilities/socket.io/socket.io');
 
 const session = require('express-session');
 const flash = require('express-flash');

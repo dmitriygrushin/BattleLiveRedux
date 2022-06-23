@@ -15,6 +15,7 @@
 
     <script>
         const username = "<%= authenticatedUser.username %>"
+        const userId = "<%= authenticatedUser.id %>"
         const roomId = "<%= roomId %>"
     </script>
 
@@ -42,7 +43,7 @@
         <%- body %>
 
         <script src="/socket.io/socket.io.js"></script>
-        <script src="/javascripts/socket.io.chat.js"></script>
+        <script src="/javascripts/socket.io.room.js"></script>
     </main>
     <%- include('../partials/footer')%>
 </body>
