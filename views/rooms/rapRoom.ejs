@@ -4,7 +4,17 @@
 
 <div class="container">
   <div class="row">
-    <div class="col-7">col-8</div>
+    <div class="col-7">
+        <div id="videos" class="video-container">
+            <video id="localVideo" class="vid" autoplay muted></video>
+        </div>
+        <br />
+        <div style="display:block">
+            <button id="switchButton" class="settings" onclick="switchMedia()">Switch Camera</button>
+            <button id="muteButton" class="settings" onclick="toggleMute()">Unmuted</button>
+            <button id="vidButton" class="settings" onclick="toggleVid()">Video Enabled</button>
+        </div>
+    </div>
     <div class="col-5">
         <div class="card border-info mb-3">
 
@@ -28,4 +38,3 @@
     <input id="input" autocomplete="off" required/>
     <button>Send</button>
 </form>
-
