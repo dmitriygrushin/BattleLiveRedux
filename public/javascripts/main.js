@@ -54,7 +54,7 @@ const configuration = {
  */
 let constraints = {
     audio: true,
-    video: { width: { max: 300 }, height: { max: 300 } }
+    video: true
 }
 
 constraints.video.facingMode = { ideal: "user" };
