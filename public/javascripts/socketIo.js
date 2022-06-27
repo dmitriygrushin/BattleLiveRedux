@@ -1,6 +1,6 @@
 let socket;
 let localStream = null;
-let peers = {}
+let peers = {};
 
 // redirect if not https
 if(location.href.substr(0,5) !== 'https') location.href = 'https' + location.href.substr(4, location.href.length - 4)
@@ -115,14 +115,17 @@ function init() {
     chatUserListToggle.addEventListener('click', chatUserListToggleVisibility); // toggle div visibility
     chatUserListToggle.addEventListener('click', chatUserListSwitchButton);
     form.addEventListener('submit', onChatFormSubmit);
-    // send message to server
-    socket.on('chat-message', msg => { onChatMessage(msg) });
+    socket.on('chat-message', msg => { onChatMessage(msg) }); // send message to server
     /* --------------- Chat end --------------- */
 }
 
     /** ============================== 
      *          Chat Start 
      * ============================== */
+/**
+ * Update user list on DOM
+ * @param {Array} users
+ */
 function onUpdateUserList(users) {
     // clear ul list
     listUsers.querySelectorAll('*').forEach(n => {n.remove()});
@@ -151,6 +154,10 @@ function chatUserListSwitchButton() {
     chatUserListText.innerHTML = (chatUserListToggle.checked) ? 'Chat' : 'User List';
 }
 
+
+/**
+ * Send message to server 
+ */
 function onChatFormSubmit(e) {
     e.preventDefault();
     if (input.value) {
@@ -159,7 +166,11 @@ function onChatFormSubmit(e) {
         input.value = '';
     }
 }
- 
+
+/**
+ * Add message to DOM when received from server 
+ * @param {String} msg 
+ */
 function onChatMessage(msg) {
     const item = document.createElement('li');
     item.textContent = msg;
@@ -199,13 +210,13 @@ function removePeer(socket_id) {
  * Creates a new peer connection and sets the event listeners
  * @param {String} socket_id 
  *                 ID of the peer
- * @param {Boolean} am_initiator 
+ * @param {Boolean} isInitiator 
  *                  Set to true if the peer initiates the connection process.
  *                  Set to false if the peer receives the connection. 
  */
-function addPeer(socket_id, am_initiator) {
+function addPeer(socket_id, isInitiator) {
     peers[socket_id] = new SimplePeer({
-        initiator: am_initiator,
+        initiator: isInitiator,
         stream: localStream,
         config: configuration
     });
@@ -219,15 +230,15 @@ function addPeer(socket_id, am_initiator) {
 
     // append stream to video element
     peers[socket_id].on('stream', stream => {
-        let newVid = document.createElement('video')
-        newVid.srcObject = stream
-        newVid.id = socket_id
-        newVid.playsinline = false
-        newVid.autoplay = true
-        newVid.className = "vid"
-        newVid.onclick = () => openPictureMode(newVid)
-        newVid.ontouchstart = (e) => openPictureMode(newVid)
-        videos.appendChild(newVid)
+        let newVid = document.createElement('video');
+        newVid.srcObject = stream;
+        newVid.id = socket_id;
+        newVid.playsinline = false;
+        newVid.autoplay = true;
+        newVid.className = "vid";
+        newVid.onclick = () => openPictureMode(newVid);
+        newVid.ontouchstart = (e) => openPictureMode(newVid);
+        videos.appendChild(newVid);
     });
 }
 
@@ -247,103 +258,10 @@ function toggleVid() {
     for (let index in localStream.getVideoTracks()) {
         localStream.getVideoTracks()[index].enabled = !localStream.getVideoTracks()[index].enabled;
         vidButton.innerText = localStream.getVideoTracks()[index].enabled ? "Video Enabled" : "Video Disabled";
+        vidButton.className = localStream.getVideoTracks()[index].enabled ? "btn btn-danger" : "btn btn-success";
     }
 }
     /* =============== WebRTC end =============== */
-
-    // ------------------------------ Don't get called --------------------------------   
-
-/**
- * updating text of buttons
- */
-function updateButtons() {
-    for (let index in localStream.getVideoTracks()) {
-        vidButton.innerText = localStream.getVideoTracks()[index].enabled ? "Video Enabled" : "Video Disabled"
-    }
-    for (let index in localStream.getAudioTracks()) {
-        muteButton.innerText = localStream.getAudioTracks()[index].enabled ? "Unmuted" : "Muted"
-    }
-}
-
-/**
- * Switches the camera between user and environment. It will just enable the camera 2 cameras not supported.
- */
-function switchMedia() {
-    if (constraints.video.facingMode.ideal === 'user') {
-        constraints.video.facingMode.ideal = 'environment'
-    } else {
-        constraints.video.facingMode.ideal = 'user'
-    }
-
-    const tracks = localStream.getTracks();
-
-    tracks.forEach(function (track) {
-        track.stop()
-    })
-
-    localVideo.srcObject = null
-    navigator.mediaDevices.getUserMedia(constraints).then(stream => {
-
-        for (let socket_id in peers) {
-            for (let index in peers[socket_id].streams[0].getTracks()) {
-                for (let index2 in stream.getTracks()) {
-                    if (peers[socket_id].streams[0].getTracks()[index].kind === stream.getTracks()[index2].kind) {
-                        peers[socket_id].replaceTrack(peers[socket_id].streams[0].getTracks()[index], stream.getTracks()[index2], peers[socket_id].streams[0])
-                        break;
-                    }
-                }
-            }
-        }
-
-        localStream = stream
-        localVideo.srcObject = stream
-
-        updateButtons()
-    })
-}
-
-/**
- * Enable screen share
- */
-function setScreen() {
-    navigator.mediaDevices.getDisplayMedia().then(stream => {
-        for (let socket_id in peers) {
-            for (let index in peers[socket_id].streams[0].getTracks()) {
-                for (let index2 in stream.getTracks()) {
-                    if (peers[socket_id].streams[0].getTracks()[index].kind === stream.getTracks()[index2].kind) {
-                        peers[socket_id].replaceTrack(peers[socket_id].streams[0].getTracks()[index], stream.getTracks()[index2], peers[socket_id].streams[0])
-                        break;
-                    }
-                }
-            }
-
-        }
-        localStream = stream
-
-        localVideo.srcObject = localStream
-        socket.emit('removeUpdatePeer', '')
-    })
-    updateButtons()
-}
-
-/**
- * Disables and removes the local stream and all the connections to other peers.
- */
-function removeLocalStream() {
-    if (localStream) {
-        const tracks = localStream.getTracks();
-
-        tracks.forEach(function (track) {
-            track.stop()
-        })
-
-        localVideo.srcObject = null
-    }
-
-    for (let socket_id in peers) {
-        removePeer(socket_id)
-    }
-}
 
 /**
  * Enable/disable microphone
@@ -352,6 +270,7 @@ function toggleMute() {
     for (let index in localStream.getAudioTracks()) {
         localStream.getAudioTracks()[index].enabled = !localStream.getAudioTracks()[index].enabled
         muteButton.innerText = localStream.getAudioTracks()[index].enabled ? "Unmuted" : "Muted"
+        muteButton.className = localStream.getAudioTracks()[index].enabled ? "btn btn-danger" : "btn btn-success"
     }
 }
 

@@ -8,9 +8,10 @@ body { margin: 0; padding-bottom: 3rem; font-family: -apple-system, BlinkMacSyst
 #messages { list-style-type: none; margin: 0; padding: 0; }
 #messages > li { padding: 0.5rem 1rem; }
 #messages > li:nth-child(odd) { background: #efefef; }
+
 #scroll-div-chat {
     width: 100%; 
-    height: 500px;
+    height: 200px;
 }
 
 .video-container {
@@ -22,21 +23,6 @@ body { margin: 0; padding-bottom: 3rem; font-family: -apple-system, BlinkMacSyst
 
 .vid {
     flex: 0 1 auto;
-    /*height: 400px;*/
-    height: 100%;
     width: 100%;
+    border: 10px inset;
 }
-
-.settings {
-    background-color: #4CAF50;
-    border: none;
-    color: white;
-    padding: 5px 10px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 14px;
-    margin: 2px 2px;
-    cursor: pointer;
-}
-
