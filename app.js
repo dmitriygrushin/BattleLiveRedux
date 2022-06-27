@@ -1,16 +1,27 @@
 const express = require('express');
 const app = express();
+/*
+const sslCert = require('./ssl/cert.pem');
+const sslKey = require('./ssl/key.pem');
+*/
 
-const http = require('http').Server(app);
-const io = require('socket.io')(http);
-const { socketIo } = require('./utilities/socket.io/socket.io');
+const fs = require('fs');
+const path = require('path');
+const httpolyglot = require('httpolyglot');
+
+// insert your own ssl certificate and keys
+const options = {
+    key: fs.readFileSync(path.join(__dirname,'.','ssl','key.pem'), 'utf-8'),
+    cert: fs.readFileSync(path.join(__dirname,'.','ssl','cert.pem'), 'utf-8')
+}
+
+//const { socketIo } = require('./utilities/socket.io/socket.io');
 
 const session = require('express-session');
 const flash = require('express-flash');
 
 const methodOverride = require('method-override')
 const ejsMate = require('ejs-mate');
-const path = require('path');
 
 const { hasRoom } = require('./middleware/hasRoom');
 
@@ -52,6 +63,8 @@ app.use('/users', userRoutes);
 app.use('/rooms', roomRoutes);
 
 
-socketIo(io);
+const httpsServer = httpolyglot.createServer(options, app);
+const io = require('socket.io')(httpsServer);
+require('./utilities/socket.io/socketController')(io);
 
-module.exports = http;
+module.exports = httpsServer;

@@ -18,15 +18,18 @@
     "express": "^4.18.1",
     "express-flash": "0.0.2",
     "express-session": "^1.17.3",
+    "httpolyglot": "^0.1.2",
     "method-override": "^3.0.0",
-    "nodemon": "^2.0.16",
+    "nodemon": "^2.0.18",
     "passport": "^0.6.0",
     "passport-local": "^1.0.0",
     "pg": "^8.7.3",
+    "simple-peer": "^9.11.1",
+    "socket.io": "^4.5.1",
     "superagent": "^7.1.6"
   },
   "devDependencies": {
-    "jest": "^28.1.0",
+    "jest": "^28.1.1",
     "should": "^13.2.3",
     "supertest": "^6.2.3",
     "supertest-session": "^4.1.0"

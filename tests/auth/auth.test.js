@@ -2,6 +2,8 @@ const request = require('supertest');
 const app = require('../../app');
 const { pool } = require('../../dbConfig');
 
+// TODO: Fix testing. After adding httpolyglot to app, the tests will fail.
+
 afterAll(async () => {
     await pool.query(`DELETE FROM user_account WHERE email = 'testEmail@gmail.com'`); // clean up db to test again
     pool.end();
