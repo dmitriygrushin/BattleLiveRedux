@@ -19,3 +19,10 @@ module.exports.getUsersInRoom = async (roomId) => {
     console.log(rows);
     return rows;
 }
+
+// change user in user_connected table in_queue to true 
+module.exports.addUserToQueue = async (roomId, userId) => {
+    await pool.query(
+        `UPDATE user_connected SET in_queue = true 
+        WHERE id = $1 AND room_id = $2`, [userId, roomId]);
+}   

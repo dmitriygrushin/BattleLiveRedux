@@ -18,6 +18,12 @@ listUsers.style.display = 'none';
 const chatUserListToggle = document.getElementById('flexSwitchCheckChecked');
     /* =============== Chat end =============== */
 
+    /** ============================== 
+     *          Rapper Queue Start 
+     * ============================== */
+const addRapperToQueueButton = document.getElementById('addRapperToQueue');
+    /* =============== Rapper Queue end =============== */
+
 
     /** ============================== 
      *          WebRTC Start 
@@ -117,7 +123,21 @@ function init() {
     form.addEventListener('submit', onChatFormSubmit);
     socket.on('chat-message', msg => { onChatMessage(msg) }); // send message to server
     /* --------------- Chat end --------------- */
+
+    /* --------------- Rapper Queue start --------------- */
+    addRapperToQueueButton.addEventListener('click', addRapperToQueue);
+    /* --------------- Rapper Queue end --------------- */
+
 }
+
+    /** ============================== 
+     *          Rapper Queue Start 
+     * ============================== */
+function addRapperToQueue() {
+    socket.emit('add-rapper-to-queue', roomId, userId);
+    addRapperToQueueButton.disabled = true;
+}
+    /* =============== Rapper Queue end =============== */
 
     /** ============================== 
      *          Chat Start 

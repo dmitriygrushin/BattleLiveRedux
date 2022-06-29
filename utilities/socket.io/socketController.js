@@ -1,4 +1,4 @@
-const { addUserToRoom, removeUserFromRoom, getUsersInRoom} = require('../../utilities/socket.io/db');
+const { addUserToRoom, removeUserFromRoom, getUsersInRoom, addUserToQueue} = require('../../utilities/socket.io/db');
 
 module.exports = async (io) => {
     io.on('connect', (socket) => {
@@ -7,13 +7,20 @@ module.exports = async (io) => {
             socket.join(roomId); 
 
                 /* --------------- UserList start --------------- */
-            // add user to room table when user joins room 
+            // add user to user_connected table when user joins room 
             await addUserToRoom(roomId, userId);
-                /* --------------- UserList end --------------- */
 
             // send all users in room to client in a room 
             io.to(roomId).emit('update-user-list', await getUsersInRoom(roomId));
                 /* --------------- UserList end --------------- */
+            
+                /* --------------- Rapper Queue start --------------- */
+            socket.on('add-rapper-to-queue', async (roomId, userId) => {
+                await addUserToQueue(roomId, userId);
+            });
+                /* --------------- Rapper Queue end --------------- */
+
+
 
                 /* --------------- WebRTC start --------------- */
             // emit 'initReceive' to all clients in the room except the current client 
