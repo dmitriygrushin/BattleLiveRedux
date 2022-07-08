@@ -1,4 +1,4 @@
-const { addUserToRoom, removeUserFromRoom, getUsersInRoom} = require('../../utilities/socket.io/db');
+const { addUserToRoom, removeUserFromRoom, getUsersInRoom, getRappersInRoom, addUserToQueue} = require('../../utilities/socket.io/db');
 
 module.exports = async (io) => {
     io.on('connect', (socket) => {
@@ -13,7 +13,15 @@ module.exports = async (io) => {
 
             // send all users in room to client in a room 
             io.to(roomId).emit('update-user-list', await getUsersInRoom(roomId));
+
+            io.to(roomId).emit('update-rapper-list', await getRappersInRoom(roomId));
                 /* --------------- UserList end --------------- */
+
+                /* --------------- Rapper Queue start --------------- */
+            socket.on('add-rapper-to-queue', async (roomId, userId) => {
+                await addUserToQueue(roomId, userId);
+            });
+                /* --------------- Rapper Queue end --------------- */
 
                 /* --------------- WebRTC start --------------- */
             // emit 'initReceive' to all clients in the room except the current client 
@@ -34,6 +42,11 @@ module.exports = async (io) => {
             socket.on('initSend', init_socket_id => {
                 console.log('INIT SEND by ' + socket.id + ' for ' + init_socket_id)
                 io.to(init_socket_id).emit('initSend', socket.id) // send the socket id to the receiver
+            });
+
+            socket.on('give-stream-permission', () => {
+                // signal all users to allow the stream to be displayed
+               socket.broadcast.to(roomId).emit('give-stream-permission', socket.id); 
             });
                 /* --------------- WebRTC end --------------- */
 

@@ -18,6 +18,12 @@ listUsers.style.display = 'none';
 const chatUserListToggle = document.getElementById('flexSwitchCheckChecked');
     /* =============== Chat end =============== */
 
+    /** ============================== 
+     *          Rapper Queue Start 
+     * ============================== */
+const addRapperToQueueButton = document.getElementById('addRapperToQueue');
+    /* =============== Rapper Queue end =============== */
+
 
     /** ============================== 
      *          WebRTC Start 
@@ -59,12 +65,15 @@ let constraints = {
 
 constraints.video.facingMode = { ideal: "user" };
 
+localVideo.style.display = 'none'; // remove visibility of local stream element at the beginning
 // enabling the camera at startup
 navigator.mediaDevices.getUserMedia(constraints).then(stream => {
     console.log('Received local stream');
 
     localVideo.srcObject = stream;
     localStream = stream;
+
+    streamOn(false); // disable all users local streams at the beginning
 
     init();
 
@@ -81,6 +90,9 @@ function init() {
 
     // get list of users in room
     socket.on('update-user-list', users => { onUpdateUserList(users) });
+
+    // get list of rappers in room
+    socket.on('update-rapper-list', rappers => { onUpdateRapperList(rappers) });
 
     /* --------------- WebRTC start --------------- */
     socket.on('initReceive', socket_id => {
@@ -109,6 +121,10 @@ function init() {
     socket.on('signal', data => {
         peers[data.socket_id].signal(data.signal);
     })
+ 
+    socket.on('give-stream-permission', socket_id => {
+        document.getElementById(socket_id).style.display = 'block';
+    });
     /* --------------- WebRTC end --------------- */
 
     /* --------------- Chat start --------------- */
@@ -117,7 +133,20 @@ function init() {
     form.addEventListener('submit', onChatFormSubmit);
     socket.on('chat-message', msg => { onChatMessage(msg) }); // send message to server
     /* --------------- Chat end --------------- */
+
+    /* --------------- Rapper Queue start --------------- */
+    addRapperToQueueButton.addEventListener('click', addRapperToQueue);
+    /* --------------- Rapper Queue end --------------- */
 }
+
+    /** ============================== 
+     *          Rapper Queue Start 
+     * ============================== */
+function addRapperToQueue() {
+    socket.emit('add-rapper-to-queue', roomId, userId);
+    addRapperToQueueButton.disabled = true;
+}	
+    /* =============== Rapper Queue end =============== */
 
     /** ============================== 
      *          Chat Start 
@@ -136,6 +165,19 @@ function onUpdateUserList(users) {
         li.textContent = user.username;
         listUsers.appendChild(li);
     });
+}
+
+/**
+ * Update user list on DOM
+ * @param {Array} users
+ */
+function onUpdateRapperList(rappers) {
+    if (rappers != undefined && rappers.length == 2) {
+        // console log all rappers 
+        console.log(rappers);
+        const h3 = document.getElementsByTagName('h3')[0];
+        h3.innerHTML = rappers[0].username + ' vs ' + rappers[1].username;
+    }
 }
 
 function chatUserListToggleVisibility() {
@@ -239,6 +281,7 @@ function addPeer(socket_id, isInitiator) {
         newVid.onclick = () => openPictureMode(newVid);
         newVid.ontouchstart = (e) => openPictureMode(newVid);
         videos.appendChild(newVid);
+        newVid.style.display = 'none'; // display video at the beginning
     });
 }
 
@@ -274,3 +317,28 @@ function toggleMute() {
     }
 }
 
+function streamOn(isOn) {
+    for (let socket_id in peers) {
+        for (let index in peers[socket_id].streams[0].getTracks()) {
+            // disable all tracks
+            peers[socket_id].streams[0].getTracks()[index].enabled = isOn; 
+        }
+    }
+    // TODO: sync button text with whether or not the stream audio/video is on or off.
+    // for good measure - webRTC is unpredictable
+    for (let index in localStream.getVideoTracks()) {
+        localStream.getVideoTracks()[index].enabled = isOn;
+        localStream.getAudioTracks()[index].enabled = isOn;
+    }
+}
+
+function giveStreamPermission() {
+    localVideo.style.display = 'block'; 
+    streamOn(true); // enable stream
+    socket.emit('give-stream-permission'); // send request to server
+}
+
+/* stream privileges
+    remove the element from the DOM when the stream is off
+    TODO: users who join after a user is allowed to stream will not see the stream
+*/

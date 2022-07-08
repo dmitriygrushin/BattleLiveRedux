@@ -19,3 +19,26 @@ module.exports.getUsersInRoom = async (roomId) => {
     console.log(rows);
     return rows;
 }
+
+// get all users from user_connected who are rappers in the room (for the chat)
+module.exports.getRappersInRoom = async (roomId) => {
+    const { rows } = await pool.query(
+        `SELECT user_account.username, user_connected.id AS user_id, user_connected.room_id as room_id 
+        FROM user_account JOIN user_connected ON user_account.id = user_connected.id 
+        WHERE user_connected.room_id = $1 AND user_connected.is_rapper = true`, [roomId]);
+    console.log('Current Rappers:' + rows);
+    return rows;
+}
+
+// change user in user_connected table in_queue to true 
+module.exports.addUserToQueue = async (roomId, userId) => {
+    await pool.query(
+        `UPDATE user_connected SET in_queue = true 
+        WHERE id = $1 AND room_id = $2`, [userId, roomId]);
+} 
+
+
+// update user_connected table make rapper = true
+module.exports.makeRapper = async (userId) => {
+    await pool.query(`UPDATE user_connected SET is_rapper = true WHERE id = $1`, [userId]);
+}
