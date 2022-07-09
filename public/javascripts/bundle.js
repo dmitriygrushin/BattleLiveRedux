@@ -1,3 +1,38 @@
+(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+const messages = document.getElementById('messages');
+const form = document.getElementById('form');
+const input = document.getElementById('input');
+const scrollDiv = document.getElementById('scroll-div-chat');
+
+module.exports.chatController = (socket) => {
+    form.addEventListener('submit', onChatFormSubmit);
+    socket.on('chat-message', msg => { onChatMessage(msg) }); // send message to server
+
+    /**
+     * Send message to server 
+     */
+    function onChatFormSubmit(e) {
+        e.preventDefault();
+        if (input.value) {
+            let message = `${username}: ${input.value}`;
+            socket.emit('chat-message', message);
+            input.value = '';
+        }
+    }
+
+    /**
+     * Add message to DOM when received from server 
+     * @param {String} msg 
+     */
+    function onChatMessage(msg) {
+        const item = document.createElement('li');
+        item.textContent = msg;
+        messages.appendChild(item);
+        scrollDiv.scrollTo(0, document.body.scrollHeight); // make the chat scroll to the bottom
+    }
+}
+
+},{}],2:[function(require,module,exports){
 const { chatController } = require("./chatController");
 const { userListController } = require("./userListController");
 
@@ -328,3 +363,50 @@ function toggleMute() {
     }
 }
 
+
+},{"./chatController":1,"./userListController":3}],3:[function(require,module,exports){
+const listUsers = document.getElementById('user-list');
+listUsers.style.display = 'none';
+const listChat = document.getElementById('messages');
+const chatUserListToggle = document.getElementById('flexSwitchCheckChecked');
+
+chatUserListToggle.addEventListener('click', chatUserListToggleVisibility); // toggle div visibility
+chatUserListToggle.addEventListener('click', chatUserListSwitchButton);
+
+module.exports.userListController = (socket) => {
+    socket.on('update-user-list', users => { onUpdateUserList(users) });
+}
+
+
+/**
+ * Update user list on DOM
+ * @param {Array} users
+ */
+function onUpdateUserList(users) {
+    // clear ul list
+    listUsers.querySelectorAll('*').forEach(n => {n.remove()});
+
+    // add users to list
+    users.forEach(user => {
+        const li = document.createElement('li');
+        li.textContent = user.username;
+        listUsers.appendChild(li);
+    });
+}
+
+function chatUserListToggleVisibility() {
+    if (chatUserListToggle.checked) {
+        listChat.style.display = 'block';
+        listUsers.style.display = 'none';
+
+    } else {
+        listChat.style.display = 'none';
+        listUsers.style.display = 'block';
+    }
+}
+
+function chatUserListSwitchButton() {
+    const chatUserListText = document.getElementById('chatUserListText');
+    chatUserListText.innerHTML = (chatUserListToggle.checked) ? 'Chat' : 'User List';
+}
+},{}]},{},[2]);
