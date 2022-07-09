@@ -1,4 +1,6 @@
-const { addUserToRoom, removeUserFromRoom, getUsersInRoom, getRappersInRoom, addUserToQueue} = require('../../utilities/socket.io/db');
+const { 
+    addUserToRoom, removeUserFromRoom, getUsersInRoom, getRappersInRoom, addUserToQueue,
+    makeRapper, isInQueueAndNotRapper } = require('../../utilities/socket.io/db');
 
 module.exports = async (io) => {
     io.on('connect', (socket) => {
@@ -8,18 +10,27 @@ module.exports = async (io) => {
 
                 /* --------------- UserList start --------------- */
             // add user to room table when user joins room 
-            await addUserToRoom(roomId, userId);
+            await addUserToRoom(roomId, userId, socket.id);
                 /* --------------- UserList end --------------- */
 
             // send all users in room to client in a room 
             io.to(roomId).emit('update-user-list', await getUsersInRoom(roomId));
 
+            // send all rappers in room to all clients in a room
             io.to(roomId).emit('update-rapper-list', await getRappersInRoom(roomId));
                 /* --------------- UserList end --------------- */
 
                 /* --------------- Rapper Queue start --------------- */
-            socket.on('add-rapper-to-queue', async (roomId, userId) => {
+            socket.on('add-user-to-queue', async (roomId, userId) => {
                 await addUserToQueue(roomId, userId);
+            });
+
+            // update user in user_connected table to is_rapper to true if they are in_queue
+            socket.on('become-rapper', async (roomId, userId) => {
+                if (await isInQueueAndNotRapper(roomId, userId) == true) {
+                    await makeRapper(roomId, userId);
+                    io.to(socket.id).emit('give-stream-permission') // give stream permission to user
+                }
             });
                 /* --------------- Rapper Queue end --------------- */
 
@@ -44,9 +55,9 @@ module.exports = async (io) => {
                 io.to(init_socket_id).emit('initSend', socket.id) // send the socket id to the receiver
             });
 
-            socket.on('give-stream-permission', () => {
+            socket.on('give-broadcast-permission', () => {
                 // signal all users to allow the stream to be displayed
-               socket.broadcast.to(roomId).emit('give-stream-permission', socket.id); 
+               socket.broadcast.to(roomId).emit('give-broadcast-permission', socket.id); 
             });
                 /* --------------- WebRTC end --------------- */
 
