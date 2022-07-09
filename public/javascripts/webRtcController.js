@@ -1,5 +1,3 @@
-let rapperList = [];
-
 const configuration = {
     // Using From https://www.metered.ca/tools/openrelay/
     "iceServers": [
@@ -24,7 +22,7 @@ const configuration = {
   ]
 }
 
-module.exports.webRtcController = (socket, peers, localStream) => {
+module.exports.webRtcController = (socket, peers, localStream, rapperList) => {
     // get list of rappers in room (allows users that join after to see the rappers)
     socket.on('update-rapper-list', rappers => { rapperList = rappers });
 

@@ -33,9 +33,42 @@ module.exports.chatController = (socket) => {
 }
 
 },{}],2:[function(require,module,exports){
+module.exports.clientStreamButtonController = (localStream) => {
+    const vidButton = document.getElementById('vidButton');
+    vidButton.addEventListener('click', toggleVid)
+
+    const muteButton = document.getElementById('muteButton');
+    muteButton.addEventListener('click', toggleMute);
+
+
+    /**
+     * Enable/disable video
+     */
+    function toggleVid() {
+        for (let index in localStream.getVideoTracks()) {
+            localStream.getVideoTracks()[index].enabled = !localStream.getVideoTracks()[index].enabled;
+            vidButton.innerText = localStream.getVideoTracks()[index].enabled ? "Video Enabled" : "Video Disabled";
+            vidButton.className = localStream.getVideoTracks()[index].enabled ? "btn btn-danger" : "btn btn-success";
+        }
+    }
+
+    /**
+     * Enable/disable microphone
+     */
+    function toggleMute() {
+        for (let index in localStream.getAudioTracks()) {
+            localStream.getAudioTracks()[index].enabled = !localStream.getAudioTracks()[index].enabled
+            muteButton.innerText = localStream.getAudioTracks()[index].enabled ? "Unmuted" : "Muted"
+            muteButton.className = localStream.getAudioTracks()[index].enabled ? "btn btn-danger" : "btn btn-success"
+        }
+    }
+}
+
+},{}],3:[function(require,module,exports){
 const { chatController } = require("./chatController");
 const { userListController } = require("./userListController");
 const { webRtcController } = require("./webRtcController");
+const { clientStreamButtonController } = require("./clientStreamButtonController");
 
 /*
     TODO: Working on making a user a rapper. Last thing done was emit('become-rapper')
@@ -51,6 +84,7 @@ const { webRtcController } = require("./webRtcController");
 let socket;
 let localStream = null;
 let peers = {};
+let rapperList = [];
 
 console.log("peers is a: " + typeof peers);
 
@@ -60,11 +94,6 @@ if(location.href.substr(0,5) !== 'https') location.href = 'https' + location.hre
     /** ============================== 
      *          Stream Buttons Start 
      * ============================== */
-    const vidButton = document.getElementById('vidButton');
-    vidButton.addEventListener('click', toggleVid)
-
-    const muteButton = document.getElementById('muteButton');
-    muteButton.addEventListener('click', toggleMute);
 
     /* =============== Stream Buttons end =============== */
 
@@ -73,16 +102,10 @@ if(location.href.substr(0,5) !== 'https') location.href = 'https' + location.hre
      * ============================== */
 const addUserToQueueButton = document.getElementById('addUserToQueue');
 const becomeRapperButton = document.getElementById('becomeRapper');
+addUserToQueueButton.addEventListener('click', addUserToQueue);
+becomeRapperButton.addEventListener('click', becomeRapper);
     /* =============== Rapper Queue end =============== */
 
-
-    /** ============================== 
-     *          WebRTC Start 
-     * ============================== */
-/**
- * RTCPeerConnection configuration 
- */
-// const configuration = {
 /**
  * UserMedia constraints
  */
@@ -114,10 +137,11 @@ navigator.mediaDevices.getUserMedia(constraints).then(stream => {
 function init() {
     socket = io();
     socket.emit('join-room', roomId, userId);
+    clientStreamButtonController(localStream);
 
     userListController(socket);
 
-    webRtcController(socket, peers, localStream);
+    webRtcController(socket, peers, localStream, rapperList);
 
     socket.on('give-broadcast-permission', socket_id => {
         document.getElementById(socket_id).style.display = 'block';
@@ -127,14 +151,7 @@ function init() {
         giveStreamPermission();
     })
 
-
-
     chatController(socket);
-
-    /* --------------- Rapper Queue start --------------- */
-    addUserToQueueButton.addEventListener('click', addUserToQueue);
-    becomeRapperButton.addEventListener('click', becomeRapper);
-    /* --------------- Rapper Queue end --------------- */
 }
 
     /** ============================== 
@@ -153,11 +170,6 @@ function becomeRapper() {
 
 
 
-    /** ============================== 
-     *          WebRTC Start 
-     * ============================== */
-
-    /* =============== WebRTC end =============== */
 /**
  * Turns on stream track
  * @param {boolean} isOn - true to turn on, false to turn off
@@ -192,30 +204,9 @@ function giveStreamPermission() {
     TODO: users who join after a user is allowed to stream will not see the stream
 */
 
-/**
- * Enable/disable video
- */
-function toggleVid() {
-    for (let index in localStream.getVideoTracks()) {
-        localStream.getVideoTracks()[index].enabled = !localStream.getVideoTracks()[index].enabled;
-        vidButton.innerText = localStream.getVideoTracks()[index].enabled ? "Video Enabled" : "Video Disabled";
-        vidButton.className = localStream.getVideoTracks()[index].enabled ? "btn btn-danger" : "btn btn-success";
-    }
-}
-
-/**
- * Enable/disable microphone
- */
-function toggleMute() {
-    for (let index in localStream.getAudioTracks()) {
-        localStream.getAudioTracks()[index].enabled = !localStream.getAudioTracks()[index].enabled
-        muteButton.innerText = localStream.getAudioTracks()[index].enabled ? "Unmuted" : "Muted"
-        muteButton.className = localStream.getAudioTracks()[index].enabled ? "btn btn-danger" : "btn btn-success"
-    }
-}
 
 
-},{"./chatController":1,"./userListController":3,"./webRtcController":4}],3:[function(require,module,exports){
+},{"./chatController":1,"./clientStreamButtonController":2,"./userListController":4,"./webRtcController":5}],4:[function(require,module,exports){
 const listUsers = document.getElementById('user-list');
 listUsers.style.display = 'none';
 const listChat = document.getElementById('messages');
@@ -259,9 +250,7 @@ function chatUserListSwitchButton() {
     const chatUserListText = document.getElementById('chatUserListText');
     chatUserListText.innerHTML = (chatUserListToggle.checked) ? 'Chat' : 'User List';
 }
-},{}],4:[function(require,module,exports){
-let rapperList = [];
-
+},{}],5:[function(require,module,exports){
 const configuration = {
     // Using From https://www.metered.ca/tools/openrelay/
     "iceServers": [
@@ -286,7 +275,7 @@ const configuration = {
   ]
 }
 
-module.exports.webRtcController = (socket, peers, localStream) => {
+module.exports.webRtcController = (socket, peers, localStream, rapperList) => {
     // get list of rappers in room (allows users that join after to see the rappers)
     socket.on('update-rapper-list', rappers => { rapperList = rappers });
 
@@ -418,4 +407,4 @@ module.exports.webRtcController = (socket, peers, localStream) => {
     }
 
 }
-},{}]},{},[2]);
+},{}]},{},[3]);
