@@ -65,10 +65,67 @@ module.exports.clientStreamButtonController = (localStream) => {
 }
 
 },{}],3:[function(require,module,exports){
+const addUserToQueueButton = document.getElementById('addUserToQueue');
+const becomeRapperButton = document.getElementById('becomeRapper');
+
+
+module.exports.rapEventLoopController = (socket, peers, localStream) => {
+    addUserToQueueButton.addEventListener('click', addUserToQueue);
+    becomeRapperButton.addEventListener('click', becomeRapper);
+
+    socket.on('give-broadcast-permission', socket_id => {
+        document.getElementById(socket_id).style.display = 'block';
+    });
+
+    socket.on('give-stream-permission', () => {
+        giveStreamPermission();
+    })
+
+    function addUserToQueue() {
+        socket.emit('add-user-to-queue', roomId, userId);
+        addUserToQueueButton.disabled = true;
+    }	
+
+    function becomeRapper() {
+        socket.emit('become-rapper', roomId, userId);
+    }
+
+    /**
+     * Turns on stream track
+     * @param {boolean} isOn - true to turn on, false to turn off
+     */
+    function streamOn(isOn) {
+        for (let socket_id in peers) {
+            for (let index in peers[socket_id].streams[0].getTracks()) {
+                // disable all tracks
+                peers[socket_id].streams[0].getTracks()[index].enabled = isOn; 
+            }
+        }
+        // TODO: sync button text with whether or not the stream audio/video is on or off.
+        // for good measure - webRTC is unpredictable
+        for (let index in localStream.getVideoTracks()) {
+            localStream.getVideoTracks()[index].enabled = isOn;
+            localStream.getAudioTracks()[index].enabled = isOn;
+        }
+    }
+
+    /**
+     * Turns on stream track and 
+     * sends signal to server to tell all other users to turn on this user's stream
+     */
+    function giveStreamPermission() {
+        localVideo.style.display = 'block'; 
+        streamOn(true); // enable stream
+        socket.emit('give-broadcast-permission'); // send request to server
+    }
+}
+
+},{}],4:[function(require,module,exports){
 const { chatController } = require("./chatController");
 const { userListController } = require("./userListController");
 const { webRtcController } = require("./webRtcController");
 const { clientStreamButtonController } = require("./clientStreamButtonController");
+const { rapEventLoopController } = require("./rapEventLoopController");
 
 /*
     TODO: Working on making a user a rapper. Last thing done was emit('become-rapper')
@@ -90,21 +147,6 @@ console.log("peers is a: " + typeof peers);
 
 // redirect if not https
 if(location.href.substr(0,5) !== 'https') location.href = 'https' + location.href.substr(4, location.href.length - 4)
-
-    /** ============================== 
-     *          Stream Buttons Start 
-     * ============================== */
-
-    /* =============== Stream Buttons end =============== */
-
-    /** ============================== 
-     *          Rapper Queue Start 
-     * ============================== */
-const addUserToQueueButton = document.getElementById('addUserToQueue');
-const becomeRapperButton = document.getElementById('becomeRapper');
-addUserToQueueButton.addEventListener('click', addUserToQueue);
-becomeRapperButton.addEventListener('click', becomeRapper);
-    /* =============== Rapper Queue end =============== */
 
 /**
  * UserMedia constraints
@@ -137,43 +179,18 @@ navigator.mediaDevices.getUserMedia(constraints).then(stream => {
 function init() {
     socket = io();
     socket.emit('join-room', roomId, userId);
+
     clientStreamButtonController(localStream);
 
     userListController(socket);
 
-    webRtcController(socket, peers, localStream, rapperList);
+    webRtcController(socket, peers, localStream, rapperList); // establish basic webRTC connection
 
-    socket.on('give-broadcast-permission', socket_id => {
-        document.getElementById(socket_id).style.display = 'block';
-    });
-
-    socket.on('give-stream-permission', () => {
-        giveStreamPermission();
-    })
+    rapEventLoopController(socket, peers, localStream, rapperList); // establish event loop
 
     chatController(socket);
 }
 
-    /** ============================== 
-     *          Rapper Queue Start 
-     * ============================== */
-function addUserToQueue() {
-    socket.emit('add-user-to-queue', roomId, userId);
-    addUserToQueueButton.disabled = true;
-}	
-
-function becomeRapper() {
-    socket.emit('become-rapper', roomId, userId);
-}
-
-    /* =============== Rapper Queue end =============== */
-
-
-
-/**
- * Turns on stream track
- * @param {boolean} isOn - true to turn on, false to turn off
- */
 function streamOn(isOn) {
     for (let socket_id in peers) {
         for (let index in peers[socket_id].streams[0].getTracks()) {
@@ -189,24 +206,13 @@ function streamOn(isOn) {
     }
 }
 
-/**
- * Turns on stream track and 
- * sends signal to server to tell all other users to turn on this user's stream
- */
-function giveStreamPermission() {
-    localVideo.style.display = 'block'; 
-    streamOn(true); // enable stream
-    socket.emit('give-broadcast-permission'); // send request to server
-}
-
-/* stream privileges
-    remove the element from the DOM when the stream is off
-    TODO: users who join after a user is allowed to stream will not see the stream
-*/
 
 
 
-},{"./chatController":1,"./clientStreamButtonController":2,"./userListController":4,"./webRtcController":5}],4:[function(require,module,exports){
+
+
+
+},{"./chatController":1,"./clientStreamButtonController":2,"./rapEventLoopController":3,"./userListController":5,"./webRtcController":6}],5:[function(require,module,exports){
 const listUsers = document.getElementById('user-list');
 listUsers.style.display = 'none';
 const listChat = document.getElementById('messages');
@@ -250,7 +256,7 @@ function chatUserListSwitchButton() {
     const chatUserListText = document.getElementById('chatUserListText');
     chatUserListText.innerHTML = (chatUserListToggle.checked) ? 'Chat' : 'User List';
 }
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 const configuration = {
     // Using From https://www.metered.ca/tools/openrelay/
     "iceServers": [
@@ -407,4 +413,4 @@ module.exports.webRtcController = (socket, peers, localStream, rapperList) => {
     }
 
 }
-},{}]},{},[3]);
+},{}]},{},[4]);
