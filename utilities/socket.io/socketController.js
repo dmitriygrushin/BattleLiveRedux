@@ -13,7 +13,7 @@ module.exports = async (io) => {
 
             webRtcController(io, socket, roomId); // setup initial WebRTC connection
 
-            rapperQueueController(io, socket);
+            rapperQueueController(io, socket, roomId);
 
             socket.on('chat-message', msg => { io.to(roomId).emit('chat-message', msg) });
 

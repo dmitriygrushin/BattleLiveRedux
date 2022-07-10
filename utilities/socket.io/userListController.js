@@ -6,6 +6,4 @@ module.exports.userListController = async (io, socket, roomId, userId) => {
     // send all users in room to client in a room 
     io.to(roomId).emit('update-user-list', await getUsersInRoom(roomId));
 
-    // send all rappers in room to all clients in a room
-    io.to(roomId).emit('update-rapper-list', await getRappersInRoom(roomId));
 }

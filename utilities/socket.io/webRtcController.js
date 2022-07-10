@@ -1,4 +1,9 @@
-module.exports.webRtcController = (io, socket, roomId) => {
+const { getRappersInRoom, } = require('../../utilities/socket.io/db');
+
+module.exports.webRtcController = async (io, socket, roomId) => {
+    // send all rappers in room to all clients in a room
+    io.to(roomId).emit('update-rapper-list', await getRappersInRoom(roomId));
+
     // emit 'initReceive' to all clients in the room except the current client 
     // Asking all other clients to setup the peer connection receiver
     socket.broadcast.to(roomId).emit('initReceive', socket.id);
@@ -19,8 +24,4 @@ module.exports.webRtcController = (io, socket, roomId) => {
         io.to(init_socket_id).emit('initSend', socket.id) // send the socket id to the receiver
     });
 
-    socket.on('give-broadcast-permission', () => {
-        // signal all users to allow the stream to be displayed
-        socket.broadcast.to(roomId).emit('give-broadcast-permission', socket.id); 
-    });
 }
