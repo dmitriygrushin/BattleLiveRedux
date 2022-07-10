@@ -1,6 +1,6 @@
 const { webRtcController } = require('../../utilities/socket.io/webRtcController');
 const { userListController } = require('../../utilities/socket.io/userListController');
-const { rapperQueueController } = require('../../utilities/socket.io/rapperQueueController');
+const { rapEventLoopController } = require('../../utilities/socket.io/rapEventLoopController');
 const { disconnectController } = require('../../utilities/socket.io/disconnectController');
 
 module.exports = async (io) => {
@@ -13,7 +13,7 @@ module.exports = async (io) => {
 
             webRtcController(io, socket, roomId); // setup initial WebRTC connection
 
-            rapperQueueController(io, socket, roomId);
+            rapEventLoopController(io, socket, roomId);
 
             socket.on('chat-message', msg => { io.to(roomId).emit('chat-message', msg) });
 

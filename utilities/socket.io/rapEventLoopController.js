@@ -1,5 +1,5 @@
-const { addUserToQueue, makeRapper, isInQueueAndNotRapper } = require('../../utilities/socket.io/db');
-module.exports.rapperQueueController = async (io, socket, roomId) => {
+const { addUserToQueue, makeRapper, isInQueueAndNotRapper } = require('./db');
+module.exports.rapEventLoopController = async (io, socket, roomId) => {
     socket.on('add-user-to-queue', async (roomId, userId) => { await addUserToQueue(roomId, userId) });
 
     // update user in user_connected table to is_rapper to true if they are in_queue
