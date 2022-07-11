@@ -1,3 +1,5 @@
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 const request = require('supertest');
 const app = require('../../app');
 const { pool } = require('../../dbConfig');
