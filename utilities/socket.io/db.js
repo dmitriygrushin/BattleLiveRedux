@@ -29,7 +29,7 @@ module.exports.getRappersInRoom = async (roomId) => {
         user_connected.socket_id as socket_id
         FROM user_account JOIN user_connected 
         ON user_account.id = user_connected.id 
-        WHERE user_connected.room_id = $1 AND user_connected.is_rapper = true`, [roomId]);
+        WHERE user_connected.room_id = $1 AND user_connected.in_queue = true AND user_connected.is_rapper = true`, [roomId]);
     console.log('Current Rappers:' + rows);
     return rows;
 }

@@ -1,18 +1,23 @@
 const addUserToQueueButton = document.getElementById('addUserToQueue');
 const becomeRapperButton = document.getElementById('becomeRapper');
+const timer = document.getElementById('timer');
 
 
 module.exports.rapEventLoopController = (socket, peers, localStream) => {
     addUserToQueueButton.addEventListener('click', addUserToQueue);
     becomeRapperButton.addEventListener('click', becomeRapper);
 
-    socket.on('give-broadcast-permission', socket_id => {
+    socket.on('display-stream', socket_id => {
         document.getElementById(socket_id).style.display = 'block';
     });
 
     socket.on('give-stream-permission', () => {
         giveStreamPermission();
-    })
+    });
+
+    socket.on('timer', (timerType, seconds) => {
+        timer.innerHTML = `Timer: [${timerType}: ${seconds}]`;
+    });
 
     function addUserToQueue() {
         socket.emit('add-user-to-queue', roomId, userId);
@@ -49,6 +54,6 @@ module.exports.rapEventLoopController = (socket, peers, localStream) => {
     function giveStreamPermission() {
         localVideo.style.display = 'block'; 
         streamOn(true); // enable stream
-        socket.emit('give-broadcast-permission'); // send request to server
+        socket.emit('display-stream'); // send request to server to turn on stream for all users
     }
 }
