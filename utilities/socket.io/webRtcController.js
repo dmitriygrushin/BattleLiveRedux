@@ -1,12 +1,12 @@
 const { getRappersInRoom, } = require('../../utilities/socket.io/db');
 
-module.exports.webRtcController = async (io, socket, roomId) => {
+module.exports.webRtcController = async (io, socket, roomId, username) => {
     // send all rappers in room to all clients in a room
     io.to(roomId).emit('update-rapper-list', await getRappersInRoom(roomId));
 
     // emit 'initReceive' to all clients in the room except the current client 
     // Asking all other clients to setup the peer connection receiver
-    socket.broadcast.to(roomId).emit('initReceive', socket.id);
+    socket.broadcast.to(roomId).emit('initReceive', socket.id, username);
 
     // relay a peer connection signal to a specific user in a room (socket.io rooms) 
     socket.on('signal', data => {
@@ -21,7 +21,7 @@ module.exports.webRtcController = async (io, socket, roomId) => {
     The sender has already setup a peer connection receiver */
     socket.on('initSend', init_socket_id => {
         //console.log('INIT SEND by ' + socket.id + ' for ' + init_socket_id)
-        io.to(init_socket_id).emit('initSend', socket.id) // send the socket id to the receiver
+        io.to(init_socket_id).emit('initSend', socket.id, username) // send the socket id to the receiver
     });
 
 }

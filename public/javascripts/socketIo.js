@@ -55,7 +55,7 @@ navigator.mediaDevices.getUserMedia(constraints).then(stream => {
  */
 function init() {
     socket = io();
-    socket.emit('join-room', roomId, userId);
+    socket.emit('join-room', roomId, userId, myUsername);
 
     clientStreamButtonController(localStream);
 

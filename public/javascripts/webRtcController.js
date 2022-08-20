@@ -26,15 +26,15 @@ module.exports.webRtcController = (socket, peers, localStream, rapperList) => {
     // get list of rappers in room (allows users that join after to see the rappers)
     socket.on('update-rapper-list', rappers => { rapperList = rappers });
 
-    socket.on('initReceive', socket_id => {
+    socket.on('initReceive', (socket_id, username) => {
         console.log('INIT RECEIVE ' + socket_id);
-        addPeer(socket_id, false);
+        addPeer(socket_id, false, username);
         socket.emit('initSend', socket_id);
     })
 
-    socket.on('initSend', socket_id => {
+    socket.on('initSend', (socket_id, username) => {
         console.log('INIT SEND ' + socket_id);
-        addPeer(socket_id, true);
+        addPeer(socket_id, true, username);
     })
 
     socket.on('removePeer', socket_id => {
@@ -85,7 +85,7 @@ module.exports.webRtcController = (socket, peers, localStream, rapperList) => {
      *                  Set to true if the peer initiates the connection process.
      *                  Set to false if the peer receives the connection. 
      */
-    function addPeer(socket_id, isInitiator) {
+    function addPeer(socket_id, isInitiator, username) {
         peers[socket_id] = new SimplePeer({
             initiator: isInitiator,
             stream: localStream,
@@ -102,6 +102,9 @@ module.exports.webRtcController = (socket, peers, localStream, rapperList) => {
         // append stream to video element
         peers[socket_id].on('stream', stream => {
             let div = document.createElement('div');
+            let pUsername = document.createElement('p');
+            pUsername.innerHTML = username;
+
             let newVid = document.createElement('video');
             newVid.srcObject = stream;
             newVid.playsinline = false;
@@ -112,6 +115,7 @@ module.exports.webRtcController = (socket, peers, localStream, rapperList) => {
 
             div.id = socket_id;
             div.appendChild(newVid);
+            div.appendChild(pUsername);
             videos.appendChild(div);
             div.style.display = 'none'; // hide displays at the beginning
             onUpdateRapperList(rapperList); // check if there are rappers and display their cameras

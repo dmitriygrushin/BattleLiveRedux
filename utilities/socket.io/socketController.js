@@ -5,13 +5,13 @@ const { disconnectController } = require('../../utilities/socket.io/disconnectCo
 
 module.exports = async (io) => {
     io.on('connect', (socket) => {
-        socket.on('join-room', async (roomId, userId) => {
+        socket.on('join-room', async (roomId, userId, username) => {
             console.log('a client is connected')
             socket.join(roomId); 
 
             userListController(io, socket, roomId, userId);
 
-            webRtcController(io, socket, roomId); // setup initial WebRTC connection
+            webRtcController(io, socket, roomId, username); // setup initial WebRTC connection
 
             rapEventLoopController(io, socket, roomId);
 
