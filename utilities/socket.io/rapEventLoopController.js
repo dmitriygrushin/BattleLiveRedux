@@ -1,5 +1,5 @@
 const { addUserToQueue, makeRapper, isInQueueAndNotRapper, isRapRoom, getRappersInRoom, 
-    checkRoomRequirements, rappersReady, chooseRappers, makeRapRoom, rappersBeenChosen } = require('./db');
+    checkRoomRequirements, rappersReady, chooseRappers, makeRapRoom, rappersBeenChosen, makeNotRapRoom } = require('./db');
 
 module.exports.rapEventLoopController = async (io, socket, roomId) => {
 
@@ -81,7 +81,7 @@ async function setupRappers(io, socket, roomId) {
     }
 
     // give chosen rappers stream permission
-    //await startTimers(io, socket, roomId);  
+    await startTimers(io, socket, roomId);  
 
 }
 
@@ -92,8 +92,8 @@ async function refreshRappers(io, socket, roomId) {
     }
 }
 
-function countDown(io, socket, roomId, seconds, timerCount) {
-    let timer = setInterval(() => {
+async function countDown(io, socket, roomId, seconds, timerCount) {
+    let timer = setInterval(async () => {
         if (timerCount != 5) {
             if (timerCount == 1) {
                 io.to(roomId).emit('timer', 'Get Ready', seconds);
@@ -114,7 +114,9 @@ function countDown(io, socket, roomId, seconds, timerCount) {
                 countDown(io, socket, roomId, 7, ++timerCount);
             }
         } else {
+            await makeNotRapRoom(roomId);
             refreshRappers(io, socket, roomId);
+            clearInterval(timer);
         }
     }, 1000);
 }

@@ -30,7 +30,7 @@ module.exports.getRappersInRoom = async (roomId) => {
         FROM user_account JOIN user_connected 
         ON user_account.id = user_connected.id 
         WHERE user_connected.room_id = $1 AND user_connected.in_queue = true AND user_connected.is_rapper = true`, [roomId]);
-    console.log('Current Rappers:' + rows);
+    console.log('getRappersInRoom(): Current Rappers:' + rows);
     return rows;
 }
 
@@ -54,7 +54,7 @@ module.exports.getTwoRappers = async (roomId) => {
         FROM user_account JOIN user_connected ON user_account.id = user_connected.id
         WHERE user_connected.room_id = $1 AND user_connected.is_rapper = true
         LIMIT 2`, [roomId]);
-    console.log('Current Rappers:' + rows);
+    console.log('getTwoRappers(): Current Rappers:' + rows);
     return rows;
 }
 
@@ -158,6 +158,11 @@ module.exports.rappersReady = async (roomId) => {
 
 module.exports.makeRapRoom = async (roomId) => {
     await pool.query( `UPDATE room SET is_rap_room = true WHERE id = $1`, [roomId]);
+    return true;
+}
+
+module.exports.makeNotRapRoom = async (roomId) => {
+    await pool.query( `UPDATE room SET is_rap_room = false WHERE id = $1`, [roomId]);
     return true;
 }
 
