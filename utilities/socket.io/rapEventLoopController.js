@@ -81,7 +81,7 @@ async function setupRappers(io, socket, roomId) {
     }
 
     // give chosen rappers stream permission
-    await startTimers(io, socket, roomId);  
+    //await startTimers(io, socket, roomId);  
 
 }
 

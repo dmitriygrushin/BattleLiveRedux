@@ -59,8 +59,8 @@ module.exports.webRtcController = (socket, peers, localStream, rapperList) => {
      * @param {String} socket_id 
      */
     function removePeer(socket_id) {
-
-        let videoEl = document.getElementById(socket_id);
+        let div = document.getElementById(socket_id);
+        let videoEl = document.getElementById(socket_id).getElementsByTagName('video')[0];
         if (videoEl) {
 
             const tracks = videoEl.srcObject.getTracks();
@@ -71,6 +71,7 @@ module.exports.webRtcController = (socket, peers, localStream, rapperList) => {
 
             videoEl.srcObject = null;
             videoEl.parentNode.removeChild(videoEl);
+            div.remove();
         }
         if (peers[socket_id]) peers[socket_id].destroy();
         delete peers[socket_id];
