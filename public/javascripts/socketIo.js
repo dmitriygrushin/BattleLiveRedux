@@ -35,7 +35,7 @@ let constraints = {
 
 constraints.video.facingMode = { ideal: "user" };
 
-localVideo.style.display = 'none'; // remove visibility of local stream element at the beginning
+videoDiv.style.display = 'none'; // remove visibility of local stream element at the beginning
 // enabling the camera at startup
 navigator.mediaDevices.getUserMedia(constraints).then(stream => {
     console.log('Received local stream');

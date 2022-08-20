@@ -50,7 +50,7 @@ module.exports.rapEventLoopController = (socket, peers, localStream) => {
      * sends signal to server to tell all other users to turn on this user's stream
      */
     function giveStreamPermission() {
-        localVideo.style.display = 'block'; 
+        videoDiv.style.display = 'block'; 
         streamOn(true); // enable stream
         socket.emit('display-stream'); // send request to server to turn on stream for all users
     }
