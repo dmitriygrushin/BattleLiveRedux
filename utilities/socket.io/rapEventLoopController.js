@@ -85,6 +85,13 @@ async function setupRappers(io, socket, roomId) {
 
 }
 
+async function refreshRappers(io, socket, roomId) {
+    const rappers = await getRappersInRoom(roomId);
+    for (let i = 0; i < rappers.length; i++) {
+        io.to(rappers[i].socket_id).emit('refresh-rapper'); 
+    }
+}
+
 function countDown(io, socket, roomId, seconds, timerCount) {
     let timer = setInterval(() => {
         if (timerCount != 5) {
@@ -106,6 +113,8 @@ function countDown(io, socket, roomId, seconds, timerCount) {
                 clearInterval(timer);
                 countDown(io, socket, roomId, 7, ++timerCount);
             }
+        } else {
+            refreshRappers(io, socket, roomId);
         }
     }, 1000);
 }

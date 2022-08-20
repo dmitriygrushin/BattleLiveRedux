@@ -84,16 +84,14 @@ module.exports.rapEventLoopController = (socket, peers, localStream) => {
         timer.innerHTML = `Timer: [${timerType}: ${seconds}]`;
     });
 
+    socket.on('refresh-rapper' ,() => {
+        window.location.reload(); 
+    });
+
     function addUserToQueue() {
         socket.emit('add-user-to-queue', roomId, userId);
         addUserToQueueButton.disabled = true;
     }	
-
-    /*
-    function becomeRapper() {
-        socket.emit('become-rapper', roomId, userId);
-    }
-    */
 
     /**
      * Turns on stream track
