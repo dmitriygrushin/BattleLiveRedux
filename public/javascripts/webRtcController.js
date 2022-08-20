@@ -100,16 +100,19 @@ module.exports.webRtcController = (socket, peers, localStream, rapperList) => {
 
         // append stream to video element
         peers[socket_id].on('stream', stream => {
+            let div = document.createElement('div');
             let newVid = document.createElement('video');
             newVid.srcObject = stream;
-            newVid.id = socket_id;
             newVid.playsinline = false;
             newVid.autoplay = true;
             newVid.className = "vid";
             newVid.onclick = () => openPictureMode(newVid);
             newVid.ontouchstart = (e) => openPictureMode(newVid);
-            videos.appendChild(newVid);
-            newVid.style.display = 'none'; // hide displays at the beginning
+
+            div.id = socket_id;
+            div.appendChild(newVid);
+            videos.appendChild(div);
+            div.style.display = 'none'; // hide displays at the beginning
             onUpdateRapperList(rapperList); // check if there are rappers and display their cameras
         });
     }
