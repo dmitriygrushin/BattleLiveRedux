@@ -42,10 +42,10 @@ module.exports.addUserToQueue = async (roomId, userId) => {
 } 
 
 // change user in user_connected table to is_rapper to true if they are in_queue
-module.exports.makeRapper = async (roomId, userId) => {
+module.exports.makeRapper = async (roomId, socketId) => {
     await pool.query(
         `UPDATE user_connected SET is_rapper = true 
-        WHERE id = $1 AND room_id = $2 AND in_queue = true`, [userId, roomId]);
+        WHERE socket_id = $1 AND room_id = $2 AND in_queue = true`, [socketId, roomId]);
 } 
 
 module.exports.getTwoRappers = async (roomId) => {
@@ -59,14 +59,14 @@ module.exports.getTwoRappers = async (roomId) => {
 }
 
 // return true if the user is in_queue and is not already a rapper 
-module.exports.isInQueueAndNotRapper = async (roomId, userId) => {
+module.exports.isInQueueAndNotRapper = async (roomId, socketId) => {
     const { rows } = await pool.query(
         `SELECT user_connected.id AS user_id, 
         user_connected.room_id as room_id, 
         user_connected.is_rapper as is_rapper, 
         user_connected.in_queue as in_queue
         FROM user_connected
-        WHERE id = $1 AND room_id = $2 AND is_rapper = false AND in_queue = true`, [userId, roomId]);
+        WHERE socket_id = $1 AND room_id = $2 AND is_rapper = false AND in_queue = true`, [socketId, roomId]);
     console.log('Current User:' + rows);
     return rows.length > 0;
 }
@@ -140,6 +140,7 @@ module.exports.chooseRappers = async (roomId) => {
         `UPDATE user_connected SET is_rapper = true
         WHERE id = $1 AND room_id = $2 AND in_queue = true`, [rows[1].user_id, roomId]);
 
+    console.log("chooseRappers function");
     return true;
 }
 

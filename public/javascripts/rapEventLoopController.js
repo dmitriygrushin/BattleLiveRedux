@@ -5,7 +5,9 @@ const timer = document.getElementById('timer');
 
 module.exports.rapEventLoopController = (socket, peers, localStream) => {
     addUserToQueueButton.addEventListener('click', addUserToQueue);
-    becomeRapperButton.addEventListener('click', becomeRapper);
+    becomeRapperButton.addEventListener('click', () => {
+        console.log('becomeRapperButton clicked');
+    });
 
     socket.on('display-stream', socket_id => {
         document.getElementById(socket_id).style.display = 'block';
@@ -24,9 +26,11 @@ module.exports.rapEventLoopController = (socket, peers, localStream) => {
         addUserToQueueButton.disabled = true;
     }	
 
+    /*
     function becomeRapper() {
         socket.emit('become-rapper', roomId, userId);
     }
+    */
 
     /**
      * Turns on stream track
