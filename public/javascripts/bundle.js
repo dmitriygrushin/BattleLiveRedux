@@ -84,6 +84,24 @@ module.exports.rapEventLoopController = (socket, peers, localStream) => {
         timer.innerHTML = `Timer: [${timerType}: ${seconds}]`;
     });
 
+    socket.on('selected-rapper', socket_id => {
+        const videos = document.getElementsByTagName('video');
+        for (let i = 0; i < videos.length; i++) {
+            videos[i].classList.remove('selected-rapper');
+        }
+
+        /**
+         *  if socket current client then highlight their camera else highlight other clients client's camera
+         */ 
+        if (socket.id == socket_id) {
+            const myVideo = document.getElementById('localVideo');
+            myVideo.classList.add('selected-rapper');
+        } else {
+            const video = document.getElementById(socket_id).getElementsByTagName('video')[0];
+            video.classList.add('selected-rapper');
+        }
+    });
+
     socket.on('refresh-rapper' ,() => {
         window.location.reload(); 
     });

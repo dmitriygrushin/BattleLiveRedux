@@ -26,3 +26,10 @@ body { margin: 0; padding-bottom: 3rem; font-family: -apple-system, BlinkMacSyst
     width: 100%;
     border: 10px inset;
 }
+
+.selected-rapper { 
+    border: 10px solid red; 
+    outline: none;
+    border-color: red;
+    box-shadow: 0 0 100px red; 
+}

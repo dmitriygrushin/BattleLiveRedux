@@ -55,7 +55,8 @@ async function rapRoomEventLoop(io, socket, roomId) {
 }
 
 async function startTimers(io, socket, roomId) {
-    countDown(io, socket, roomId, 10, 1);
+    const rappers = await getRappersInRoom(roomId);
+    countDown(io, socket, roomId, 10, 1, rappers);
 }
 
 async function giveStreamPermission(io, socketId, socket) {
@@ -92,17 +93,20 @@ async function refreshRappers(io, socket, roomId) {
     }
 }
 
-async function countDown(io, socket, roomId, seconds, timerCount) {
+async function countDown(io, socket, roomId, seconds, timerCount, rappers) {
     let timer = setInterval(async () => {
         if (timerCount != 5) {
             if (timerCount == 1) {
                 io.to(roomId).emit('timer', 'Get Ready', seconds);
             } else if (timerCount == 2) {
-                io.to(roomId).emit('timer', 'Rapper 1', seconds);
+                io.to(roomId).emit('timer', rappers[0].username, seconds);
+                io.to(roomId).emit('selected-rapper', rappers[0].socket_id);
             } else if (timerCount == 3) {
-                io.to(roomId).emit('timer', 'Rapper 2', seconds);
+                io.to(roomId).emit('timer', rappers[1].username, seconds);
+                io.to(roomId).emit('selected-rapper', rappers[1].socket_id);
             } else {
                 io.to(roomId).emit('timer', 'Vote', seconds);
+                io.to(roomId).emit('selected-rapper', '-1');
             }
 
             seconds--;
@@ -111,7 +115,7 @@ async function countDown(io, socket, roomId, seconds, timerCount) {
 
             if(seconds == 0) {
                 clearInterval(timer);
-                countDown(io, socket, roomId, 7, ++timerCount);
+                countDown(io, socket, roomId, 7, ++timerCount, rappers);
             }
         } else {
             await makeNotRapRoom(roomId);
