@@ -18,7 +18,11 @@ module.exports.rapEventLoopController = (socket, peers, localStream) => {
     });
 
     socket.on('timer', (timerType, seconds) => {
-        timer.innerHTML = `Timer: [${timerType}: ${seconds}]`;
+        if (timerType == 'Pending') {
+            timer.innerHTML = `Timer: [${timerType}]`;
+        } else {
+            timer.innerHTML = `Timer: [${timerType}: ${seconds}]`;
+        }
     });
 
     socket.on('selected-rapper', socket_id => {

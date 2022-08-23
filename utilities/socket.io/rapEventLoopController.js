@@ -119,6 +119,7 @@ async function countDown(io, socket, roomId, seconds, timerCount, rappers) {
             }
         } else {
             io.to(roomId).emit('rapper-vs-rapper', `_ vs _`);
+            io.to(roomId).emit('timer', 'Pending', '-1');
             await makeNotRapRoom(roomId);
             refreshRappers(io, socket, roomId);
             clearInterval(timer);
