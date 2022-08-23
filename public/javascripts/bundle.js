@@ -80,6 +80,10 @@ module.exports.rapEventLoopController = (socket, peers, localStream) => {
         giveStreamPermission();
     });
 
+    socket.on('rapper-vs-rapper', rappers => {
+        document.getElementById('rapper-vs-rapper').innerHTML = rappers;
+    });
+
     socket.on('timer', (timerType, seconds) => {
         timer.innerHTML = `Timer: [${timerType}: ${seconds}]`;
     });
@@ -102,7 +106,7 @@ module.exports.rapEventLoopController = (socket, peers, localStream) => {
         }
     });
 
-    socket.on('refresh-rapper' ,() => {
+    socket.on('refresh-rapper', () => {
         window.location.reload(); 
     });
 
