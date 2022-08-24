@@ -33,3 +33,10 @@ body { margin: 0; padding-bottom: 3rem; font-family: -apple-system, BlinkMacSyst
     border-color: red;
     box-shadow: 0 0 100px red; 
 }
+
+.finished-rapper { 
+    border: 10px solid green; 
+    outline: none;
+    border-color: green;
+    box-shadow: 0 0 100px green; 
+}

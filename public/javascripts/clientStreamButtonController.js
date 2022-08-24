@@ -5,6 +5,9 @@ module.exports.clientStreamButtonController = (localStream) => {
     const muteButton = document.getElementById('muteButton');
     muteButton.addEventListener('click', toggleMute);
 
+    vidButton.disabled = true;
+    muteButton.disabled = true;
+
     updateButtons(); // update buttons right when user joins
 
 
@@ -17,6 +20,7 @@ module.exports.clientStreamButtonController = (localStream) => {
             vidButton.innerText = localStream.getVideoTracks()[index].enabled ? "Video Enabled" : "Video Disabled";
             vidButton.className = localStream.getVideoTracks()[index].enabled ? "btn btn-danger" : "btn btn-success";
         }
+        updateButtons(); 
     }
 
     /**
@@ -28,6 +32,7 @@ module.exports.clientStreamButtonController = (localStream) => {
             muteButton.innerText = localStream.getAudioTracks()[index].enabled ? "Unmuted" : "Muted"
             muteButton.className = localStream.getAudioTracks()[index].enabled ? "btn btn-danger" : "btn btn-success"
         }
+        updateButtons(); 
     }
 
     /**
@@ -35,11 +40,11 @@ module.exports.clientStreamButtonController = (localStream) => {
      */
     function updateButtons() {
         for (let index in localStream.getVideoTracks()) {
-            document.getElementById('vidButton').innerText = localStream.getVideoTracks()[index].enabled ? "Video Enabled" : "Video Disabled"
+            document.getElementById('vidButton').innerText = localStream.getVideoTracks()[index].enabled ? "✔ Video Enabled" : "❌ Video Disabled"
             document.getElementById('vidButton').className = localStream.getVideoTracks()[index].enabled ? "btn btn-danger" : "btn btn-success";
         }
         for (let index in localStream.getAudioTracks()) {
-            document.getElementById('muteButton').innerText = localStream.getAudioTracks()[index].enabled ? "Unmuted" : "Muted"
+            document.getElementById('muteButton').innerText = localStream.getAudioTracks()[index].enabled ? "✔ Unmuted" : "❌ Muted"
             document.getElementById('muteButton').className = localStream.getVideoTracks()[index].enabled ? "btn btn-danger" : "btn btn-success";
         }
     }
