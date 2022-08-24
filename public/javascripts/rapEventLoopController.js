@@ -69,6 +69,8 @@ module.exports.rapEventLoopController = (socket, peers, localStream) => {
             localStream.getVideoTracks()[index].enabled = isOn;
             localStream.getAudioTracks()[index].enabled = isOn;
         }
+
+        updateButtons(); // update buttons after client stream comes on
     }
 
     /**
@@ -79,5 +81,20 @@ module.exports.rapEventLoopController = (socket, peers, localStream) => {
         videoDiv.style.display = 'block'; 
         streamOn(true); // enable stream
         socket.emit('display-stream'); // send request to server to turn on stream for all users
+    }
+
+
+    /**
+     * updating text of buttons depending on the state of video/audio
+     */
+    function updateButtons() {
+        for (let index in localStream.getVideoTracks()) {
+            document.getElementById('vidButton').innerText = localStream.getVideoTracks()[index].enabled ? "Video Enabled" : "Video Disabled"
+            document.getElementById('vidButton').className = localStream.getVideoTracks()[index].enabled ? "btn btn-danger" : "btn btn-success";
+        }
+        for (let index in localStream.getAudioTracks()) {
+            document.getElementById('muteButton').innerText = localStream.getAudioTracks()[index].enabled ? "Unmuted" : "Muted"
+            document.getElementById('muteButton').className = localStream.getVideoTracks()[index].enabled ? "btn btn-danger" : "btn btn-success";
+        }
     }
 }
