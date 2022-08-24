@@ -145,8 +145,8 @@ module.exports.webRtcController = (socket, peers, localStream, rapperList) => {
 
             // add rapper names to h3 element
             const h3 = document.getElementsByTagName('h3')[0];
-            h3.innerHTML = rappers[0].username + ' vs ';
-            //h3.innerHTML = rappers[0].username + ' vs ' + rappers[1].username;
+            //h3.innerHTML = rappers[0].username + ' vs ';
+            h3.innerHTML = rappers[0].username + ' vs ' + rappers[1].username;
 
             // display rapper streams elements
             //document.getElementById(rappers[0].socket_id).style.display = 'block';

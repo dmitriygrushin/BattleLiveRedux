@@ -40,6 +40,11 @@ module.exports.clientStreamButtonController = (localStream) => {
     const muteButton = document.getElementById('muteButton');
     muteButton.addEventListener('click', toggleMute);
 
+    vidButton.disabled = true;
+    muteButton.disabled = true;
+
+    updateButtons(); // update buttons right when user joins
+
 
     /**
      * Enable/disable video
@@ -50,6 +55,7 @@ module.exports.clientStreamButtonController = (localStream) => {
             vidButton.innerText = localStream.getVideoTracks()[index].enabled ? "Video Enabled" : "Video Disabled";
             vidButton.className = localStream.getVideoTracks()[index].enabled ? "btn btn-danger" : "btn btn-success";
         }
+        updateButtons(); 
     }
 
     /**
@@ -60,6 +66,21 @@ module.exports.clientStreamButtonController = (localStream) => {
             localStream.getAudioTracks()[index].enabled = !localStream.getAudioTracks()[index].enabled
             muteButton.innerText = localStream.getAudioTracks()[index].enabled ? "Unmuted" : "Muted"
             muteButton.className = localStream.getAudioTracks()[index].enabled ? "btn btn-danger" : "btn btn-success"
+        }
+        updateButtons(); 
+    }
+
+    /**
+     * updating text of buttons depending on the state of video/audio
+     */
+    function updateButtons() {
+        for (let index in localStream.getVideoTracks()) {
+            document.getElementById('vidButton').innerText = localStream.getVideoTracks()[index].enabled ? "✔ Video Enabled" : "❌ Video Disabled"
+            document.getElementById('vidButton').className = localStream.getVideoTracks()[index].enabled ? "btn btn-danger" : "btn btn-success";
+        }
+        for (let index in localStream.getAudioTracks()) {
+            document.getElementById('muteButton').innerText = localStream.getAudioTracks()[index].enabled ? "✔ Unmuted" : "❌ Muted"
+            document.getElementById('muteButton').className = localStream.getVideoTracks()[index].enabled ? "btn btn-danger" : "btn btn-success";
         }
     }
 }
@@ -92,6 +113,28 @@ module.exports.rapEventLoopController = (socket, peers, localStream) => {
         }
     });
 
+    // allow both rappers to talk after they're done
+    socket.on('rappers-finished', socket_id => {
+        /*
+        const videos = document.getElementsByTagName('video');
+        for (let i = 0; i < videos.length; i++) {
+            videos[i].classList.remove('selected-rapper');
+        }
+        */
+
+        if (socket.id == socket_id) {
+            const myVideo = document.getElementById('localVideo');
+            myVideo.classList.add('finished-rapper');
+            toggleMute(true); // if it's the client's turn then their mic will turn ON
+        } 
+        const video = document.getElementById(socket_id).getElementsByTagName('video')[0];
+
+        if (typeof(video) != 'undefined' && video != null) {
+            video.classList.add('finished-rapper');
+            toggleMute(true); 
+        }
+    });
+
     socket.on('selected-rapper', socket_id => {
         const videos = document.getElementsByTagName('video');
         for (let i = 0; i < videos.length; i++) {
@@ -104,9 +147,11 @@ module.exports.rapEventLoopController = (socket, peers, localStream) => {
         if (socket.id == socket_id) {
             const myVideo = document.getElementById('localVideo');
             myVideo.classList.add('selected-rapper');
+            toggleMute(true); // if it's the client's turn then their mic will turn ON
         } else {
             const video = document.getElementById(socket_id).getElementsByTagName('video')[0];
             video.classList.add('selected-rapper');
+            toggleMute(false); // if it's NOT the client's turn then their mic will turn OFF
         }
     });
 
@@ -134,8 +179,15 @@ module.exports.rapEventLoopController = (socket, peers, localStream) => {
         // for good measure - webRTC is unpredictable
         for (let index in localStream.getVideoTracks()) {
             localStream.getVideoTracks()[index].enabled = isOn;
-            localStream.getAudioTracks()[index].enabled = isOn;
+            localStream.getAudioTracks()[index].enabled = false; // audio is false until it's the client's turn to rap
         }
+
+        const vidButton = document.getElementById('vidButton');
+        const muteButton = document.getElementById('muteButton');
+        vidButton.disabled = false;
+        muteButton.disabled = false;
+
+        updateButtons(); // update buttons after client stream comes on
     }
 
     /**
@@ -146,6 +198,30 @@ module.exports.rapEventLoopController = (socket, peers, localStream) => {
         videoDiv.style.display = 'block'; 
         streamOn(true); // enable stream
         socket.emit('display-stream'); // send request to server to turn on stream for all users
+    }
+
+
+    /**
+     * updating text of buttons depending on the state of video/audio
+     */
+    function updateButtons() {
+        for (let index in localStream.getVideoTracks()) {
+            document.getElementById('vidButton').innerText = localStream.getVideoTracks()[index].enabled ? "✔ Video Enabled" : "❌ Video Disabled"
+            document.getElementById('vidButton').className = localStream.getVideoTracks()[index].enabled ? "btn btn-danger" : " btn btn-success";
+        }
+        for (let index in localStream.getAudioTracks()) {
+            document.getElementById('muteButton').innerText = localStream.getAudioTracks()[index].enabled ? "✔ Unmuted" : "❌ Muted"
+            document.getElementById('muteButton').className = localStream.getAudioTracks()[index].enabled ? "btn btn-danger" : "btn btn-success";
+        }
+    }
+
+    function toggleMute(isOn) {
+        for (let index in localStream.getAudioTracks()) {
+            localStream.getAudioTracks()[index].enabled = isOn;
+            muteButton.innerText = localStream.getAudioTracks()[index].enabled ? "Unmuted" : "Muted"
+            muteButton.className = localStream.getAudioTracks()[index].enabled ? "btn btn-danger" : "btn btn-success"
+        }
+        updateButtons(); 
     }
 }
 
@@ -433,8 +509,8 @@ module.exports.webRtcController = (socket, peers, localStream, rapperList) => {
 
             // add rapper names to h3 element
             const h3 = document.getElementsByTagName('h3')[0];
-            h3.innerHTML = rappers[0].username + ' vs ';
-            //h3.innerHTML = rappers[0].username + ' vs ' + rappers[1].username;
+            //h3.innerHTML = rappers[0].username + ' vs ';
+            h3.innerHTML = rappers[0].username + ' vs ' + rappers[1].username;
 
             // display rapper streams elements
             //document.getElementById(rappers[0].socket_id).style.display = 'block';

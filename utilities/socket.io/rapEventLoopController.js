@@ -56,7 +56,7 @@ async function rapRoomEventLoop(io, socket, roomId) {
 
 async function startTimers(io, socket, roomId) {
     const rappers = await getRappersInRoom(roomId);
-    countDown(io, socket, roomId, 10, 1, rappers);
+    countDown(io, socket, roomId, 15, 1, rappers);
 }
 
 async function giveStreamPermission(io, socketId, socket) {
@@ -74,7 +74,7 @@ async function giveStreamPermission(io, socketId, socket) {
 async function setupRappers(io, socket, roomId) {
     // get rappers in room
     const rappers = await getRappersInRoom(roomId);
-    io.to(roomId).emit('rapper-vs-rapper', `(1st)${rappers[0].username} vs (2nd)${rappers[1].username}`);
+    io.to(roomId).emit('rapper-vs-rapper', `${rappers[0].username} vs ${rappers[1].username}`);
     console.log('setupRappers Function');
     // send signal to rappers to allow stream to be displayed 
     for (let i = 0; i < rappers.length; i++) {
@@ -95,27 +95,62 @@ async function refreshRappers(io, socket, roomId) {
 
 async function countDown(io, socket, roomId, seconds, timerCount, rappers) {
     let timer = setInterval(async () => {
-        if (timerCount != 5) {
-            if (timerCount == 1) {
-                io.to(roomId).emit('timer', 'Get Ready', seconds);
-            } else if (timerCount == 2) {
-                io.to(roomId).emit('timer', rappers[0].username, seconds);
-                io.to(roomId).emit('selected-rapper', rappers[0].socket_id);
-            } else if (timerCount == 3) {
-                io.to(roomId).emit('timer', rappers[1].username, seconds);
-                io.to(roomId).emit('selected-rapper', rappers[1].socket_id);
-            } else {
-                io.to(roomId).emit('timer', 'Vote', seconds);
-                io.to(roomId).emit('selected-rapper', '-1');
+        if (timerCount <= 6) {
+            switch(timerCount) {
+                case 1:
+                    io.to(roomId).emit('timer', `Get Ready! Everyone!`, seconds);
+                    break;
+                case 2:
+                    io.to(roomId).emit('timer', `Get Ready! ${rappers[0].username}`, seconds);
+                    break;
+                case 3:
+                    io.to(roomId).emit('timer', `Spit Some Heat: ${rappers[0].username}`, seconds);
+                    io.to(roomId).emit('selected-rapper', rappers[0].socket_id);
+                    break;
+                case 4:
+                    io.to(roomId).emit('timer', `Get Ready! ${rappers[1].username}`, seconds);
+                    break;
+                case 5:
+                    io.to(roomId).emit('timer', `Spit Some Heat: ${rappers[1].username}`, seconds);
+                    io.to(roomId).emit('selected-rapper', rappers[1].socket_id);
+                    break;
+                case 6:
+                    io.to(roomId).emit('timer', 'Vote', seconds);
+                    //io.to(roomId).emit('selected-rapper', '-1');
+                    // allow both rappers to have their mics on
+                    io.to(roomId).emit('rappers-finished', rappers[0].socket_id);
+                    io.to(roomId).emit('rappers-finished', rappers[1].socket_id);
+                    break;
             }
-
             seconds--;
 
-            //console.log('seconds: ' + seconds);
-
-            if(seconds == 0) {
+            if(seconds <= 0) {
                 clearInterval(timer);
-                countDown(io, socket, roomId, 7, ++timerCount, rappers);
+                switch(timerCount) {
+                    case 1:
+                        // get ready rapper1
+                        countDown(io, socket, roomId, 5, ++timerCount, rappers);
+                        break;
+                    case 2:
+                        // rapper1 turn
+                        countDown(io, socket, roomId, 5, ++timerCount, rappers);
+                        break;
+                    case 3:
+                        // get ready rapper2
+                        countDown(io, socket, roomId, 5, ++timerCount, rappers);
+                        break;
+                    case 4:
+                        // rapper2 turn
+                        countDown(io, socket, roomId, 5, ++timerCount, rappers);
+                        break;
+                    case 5:
+                        // vote
+                        countDown(io, socket, roomId, 5, ++timerCount, rappers);
+                        break;
+                    case 6:
+                        countDown(io, socket, roomId, 1, ++timerCount, rappers);
+                        break;
+                }
             }
         } else {
             io.to(roomId).emit('rapper-vs-rapper', `_ vs _`);
