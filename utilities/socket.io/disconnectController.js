@@ -1,4 +1,5 @@
 const { removeUserFromRoom, getUsersInRoom, } = require('../../utilities/socket.io/db');
+const { rapRoomEventLoop } = require('../../utilities/socket.io/rapEventLoopController');
 module.exports.disconnectController = (io, socket, roomId, userId) => {
     socket.on('disconnect', async () => {
         console.log('socket disconnected ' + socket.id)
@@ -11,6 +12,9 @@ module.exports.disconnectController = (io, socket, roomId, userId) => {
 
         // UserList - send all users in room to client in a room 
         io.to(roomId).emit('update-user-list', await getUsersInRoom(roomId));
+
+        await rapRoomEventLoop(io, socket, roomId);
+
         /* --------------- UserList end --------------- */
     })
 }

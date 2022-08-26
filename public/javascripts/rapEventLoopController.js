@@ -68,7 +68,7 @@ module.exports.rapEventLoopController = (socket, peers, localStream) => {
     });
 
     socket.on('refresh-rapper', () => {
-        window.location.reload(); 
+        window.location.href = "https://www.google.com/";
     });
 
     function addUserToQueue() {

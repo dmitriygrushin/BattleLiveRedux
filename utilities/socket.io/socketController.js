@@ -9,15 +9,15 @@ module.exports = async (io) => {
             console.log('a client is connected')
             socket.join(roomId); 
 
-            userListController(io, socket, roomId, userId);
+            await userListController(io, socket, roomId, userId);
 
-            webRtcController(io, socket, roomId, username); // setup initial WebRTC connection
+            await webRtcController(io, socket, roomId, username); // setup initial WebRTC connection
 
-            rapEventLoopController(io, socket, roomId);
+            await rapEventLoopController(io, socket, roomId);
 
             socket.on('chat-message', msg => { io.to(roomId).emit('chat-message', msg) });
 
-            disconnectController(io, socket, roomId, userId);
+            await disconnectController(io, socket, roomId, userId);
         });
     })
 }

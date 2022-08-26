@@ -1,7 +1,7 @@
 const { addUserToQueue, isRapRoom, getRappersInRoom, 
     checkRoomRequirements, rappersReady, chooseRappers, makeRapRoom, rappersBeenChosen, makeNotRapRoom } = require('./db');
 
-module.exports.rapEventLoopController = async (io, socket, roomId) => {
+async function rapEventLoopController (io, socket, roomId) {
 
     // update user in user_connected table to is_rapper to true if they are in_queue
     /*
@@ -56,7 +56,7 @@ async function rapRoomEventLoop(io, socket, roomId) {
 
 async function startTimers(io, socket, roomId) {
     const rappers = await getRappersInRoom(roomId);
-    countDown(io, socket, roomId, 15, 1, rappers);
+    await countDown(io, socket, roomId, 15, 1, rappers);
 }
 
 async function giveStreamPermission(io, socketId, socket) {
@@ -95,7 +95,7 @@ async function refreshRappers(io, socket, roomId) {
 
 async function countDown(io, socket, roomId, seconds, timerCount, rappers) {
     let timer = setInterval(async () => {
-        if (timerCount <= 6) {
+        if (timerCount <= 7) {
             switch(timerCount) {
                 case 1:
                     io.to(roomId).emit('timer', `Get Ready! Everyone!`, seconds);
@@ -121,6 +121,11 @@ async function countDown(io, socket, roomId, seconds, timerCount, rappers) {
                     io.to(roomId).emit('rappers-finished', rappers[0].socket_id);
                     io.to(roomId).emit('rappers-finished', rappers[1].socket_id);
                     break;
+                case 7:
+                    io.to(roomId).emit('timer', 'Getting next rappers ready...', seconds);
+                    //io.to(roomId).emit('rappers-finished', rappers[0].socket_id);
+                    //io.to(roomId).emit('rappers-finished', rappers[1].socket_id);
+                    break;
             }
             seconds--;
 
@@ -129,35 +134,49 @@ async function countDown(io, socket, roomId, seconds, timerCount, rappers) {
                 switch(timerCount) {
                     case 1:
                         // get ready rapper1
-                        countDown(io, socket, roomId, 5, ++timerCount, rappers);
+                        await countDown(io, socket, roomId, 5, ++timerCount, rappers);
                         break;
                     case 2:
                         // rapper1 turn
-                        countDown(io, socket, roomId, 5, ++timerCount, rappers);
+                        await countDown(io, socket, roomId, 5, ++timerCount, rappers);
                         break;
                     case 3:
                         // get ready rapper2
-                        countDown(io, socket, roomId, 5, ++timerCount, rappers);
+                        await countDown(io, socket, roomId, 5, ++timerCount, rappers);
                         break;
                     case 4:
                         // rapper2 turn
-                        countDown(io, socket, roomId, 5, ++timerCount, rappers);
+                        await countDown(io, socket, roomId, 5, ++timerCount, rappers);
                         break;
                     case 5:
                         // vote
-                        countDown(io, socket, roomId, 5, ++timerCount, rappers);
+                        await countDown(io, socket, roomId, 5, ++timerCount, rappers);
                         break;
                     case 6:
-                        countDown(io, socket, roomId, 1, ++timerCount, rappers);
+                        // Getting next rappers ready...
+                        io.to(roomId).emit('rapper-vs-rapper', `_ vs _`);
+                        io.to(roomId).emit('timer', 'Pending', '-1');
+                        await refreshRappers(io, socket, roomId);
+
+                        await countDown(io, socket, roomId, 20, ++timerCount, rappers);
+                        break;
+                    case 7:
+                        await countDown(io, socket, roomId, 35, ++timerCount, rappers);
                         break;
                 }
             }
         } else {
-            io.to(roomId).emit('rapper-vs-rapper', `_ vs _`);
-            io.to(roomId).emit('timer', 'Pending', '-1');
             await makeNotRapRoom(roomId);
-            refreshRappers(io, socket, roomId);
-            clearInterval(timer);
-        }
-    }, 1000);
-}
+            await rapRoomEventLoop(io, socket, roomId);
+                /*
+                io.to(roomId).emit('rapper-vs-rapper', `_ vs _`);
+                io.to(roomId).emit('timer', 'Pending', '-1');
+                await refreshRappers(io, socket, roomId);
+                await makeNotRapRoom(roomId);
+                */
+                clearInterval(timer);
+            }
+        }, 1000);
+    }
+
+module.exports = { rapEventLoopController, rapRoomEventLoop }
