@@ -1,6 +1,7 @@
 <% layout('layouts/rapRoom') %> 
 <h1>Welcome to <%= owner.toUpperCase() %>'s  Room</h1> 
 <h2>Description: <%= room.description %> </h2> 
+<h2 id="winnerHeading">Winner: _</h2> 
 
 <h2 id="timer" class="text-danger">Timer: [Pending] </h2> 
 
@@ -21,6 +22,10 @@
             <button id="muteButton" class=""></button>
             <button id="vidButton" class=""></button>
             <button id="addUserToQueue" class="btn btn-light">Join Queue</button>
+            <!-- Button trigger modal -->
+            <button id="voteButton" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+              Vote
+            </button>
         </div>
     </div>
     <div class="position-relative">
@@ -41,6 +46,29 @@
             </form>
           </div>
         </div>
+    </div>
+  </div>
+
+
+  <!-- Modal -->
+  <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Cast Your Vote</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="col-md-7 mx-auto">
+
+            <button id="rapper1VoteButton" class="btn btn-info" data-bs-dismiss="modal">Rapper1</button>
+            <button id="rapper2VoteButton" class="btn btn-info" data-bs-dismiss="modal">Rapper2</button>
+            <p id="voted-p">Voted!</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+        </div>
+      </div>
     </div>
   </div>
 </div>
