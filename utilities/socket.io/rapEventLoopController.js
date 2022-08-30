@@ -162,6 +162,15 @@ async function countDown(io, socket, roomId, seconds, timerCount, rappers) {
                         // vote
                         {
                             const rappers = await getRappersInRoom(roomId);
+                            // check if a rapper left the room
+                            if (rappers[0] == undefined || rappers[1] == undefined) {
+                                // announce winner
+                                if (rappers[0] == undefined) io.to(roomId).emit('winner-voted', rappers[1].username);
+                                if (rappers[1] == undefined) io.to(roomId).emit('winner-voted', rappers[0].username);
+                                // skip voting and announcing of winner case since it's already been done above
+                                await countDown(io, socket, roomId, 10, 7, rappers);
+                                break;
+                            }
                             const rapper1 = {'id': rappers[0].user_id, 'username': rappers[0].username};
                             const rapper2 = {'id': rappers[1].user_id, 'username': rappers[1].username};
                             io.to(roomId).emit('vote-setup', rapper1, rapper2);
