@@ -3,6 +3,7 @@ const timer = document.getElementById('timer');
 const voteButton = document.getElementById('voteButton');
 const rapper1VoteButton = document.getElementById('rapper1VoteButton');
 const rapper2VoteButton = document.getElementById('rapper2VoteButton');
+const cancelVoteButton = document.getElementById('cancelVoteButton');
 
 document.getElementById('voted-p').style.visibility = 'hidden';
 
@@ -21,8 +22,11 @@ module.exports.rapEventLoopController = (socket, peers, localStream) => {
         giveStreamPermission();
     });
 
-    socket.on('winner-voted', (winner) => {
+    socket.on('winner-voted', winner => {
         document.getElementById('winnerHeading').innerHTML = `Winner: ${winner}`;
+        // exit the user out of the voting modal once winner has been decided
+        voteButton.disabled = true;
+        cancelVoteButton.click();
     })
 
     socket.on('rapper-vs-rapper', rappers => {
