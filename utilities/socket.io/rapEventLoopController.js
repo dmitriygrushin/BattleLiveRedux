@@ -12,7 +12,7 @@ async function rapEventLoopController (io, socket, roomId) {
         console.log("socket.on('display-stream')");
     });
 
-    // socket_id: id of the user they voted for
+    // user_id of the user they voted for
     socket.on('vote-rapper', id => {
         socket.data.user.vote = id;
     });
@@ -222,12 +222,16 @@ async function refreshRoomVotes(io, roomId) {
 
 
 async function calculateRoomVotes(io, roomId) {
+    const rappers = await getRappersInRoom(roomId);
+    const rapper1 = {'id': rappers[0].user_id};
+    const rapper2 = {'id': rappers[1].user_id};
+
     const map = new Map();
     let winner;
     let draw = false;
     let userList = await io.in(roomId).fetchSockets(); 
     userList.forEach(socket => { 
-        if (socket.data.user.vote != -1) {
+        if (socket.data.user.vote != -1 || socket.data.user.vote == rapper1.id || socket.data.user.vote == rapper2.id) {
             if (map.has(socket.data.user.vote)) {
                 // increment occurrence
                 map.set(socket.data.user.vote, map.get(socket.data.user.vote) + 1);

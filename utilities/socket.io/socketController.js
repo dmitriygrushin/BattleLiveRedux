@@ -8,6 +8,7 @@ module.exports = async (io) => {
         socket.on('join-room', async (roomId, userId, username) => {
             console.log('a client is connected')
             socket.join(roomId); 
+            socket.data.user = {'user_account_id': userId}; // initial user data. 
 
             await userListController(io, socket, roomId, userId);
 
