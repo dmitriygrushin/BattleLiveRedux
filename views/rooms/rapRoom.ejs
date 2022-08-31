@@ -1,7 +1,7 @@
 <% layout('layouts/rapRoom') %> 
 <h1>Welcome to <%= owner.toUpperCase() %>'s  Room</h1> 
 <h2>Description: <%= room.description %> </h2> 
-<h2 id="winnerHeading">Winner: _</h2> 
+<h2 id="winnerHeading" class="text-success" >Winner: _</h2> 
 
 <h2 id="timer" class="text-danger">Timer: [Pending] </h2> 
 
@@ -23,9 +23,8 @@
             <button id="vidButton" class=""></button>
             <button id="addUserToQueue" class="btn btn-light">Join Queue</button>
             <!-- Button trigger modal -->
-            <button id="voteButton" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-              Vote
-            </button>
+            <button id="voteButton" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">Vote</button>
+            <button id="copyRoomLinkButton" class="btn btn-secondary">Copy Room Link</button>
         </div>
     </div>
     <div class="position-relative">

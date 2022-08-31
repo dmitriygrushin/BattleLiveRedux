@@ -10,6 +10,14 @@ module.exports.clientStreamButtonController = (localStream) => {
 
     updateButtons(); // update buttons right when user joins
 
+    const copyRoomLinkButton = document.getElementById('copyRoomLinkButton');
+
+    copyRoomLinkButton.addEventListener('click', () => {
+        //window.navigator.clipboard.writeText(textToCopy);
+        navigator.clipboard.writeText(window.location.href);
+    })
+
+
 
     /**
      * Enable/disable video
