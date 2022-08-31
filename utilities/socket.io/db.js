@@ -177,3 +177,13 @@ module.exports.rappersBeenChosen = async (roomId) => {
         WHERE room_id = $1 AND is_rapper = true AND in_queue = true`, [roomId]);
     return rows.length == 2;
 }
+
+
+// get all users from user_connected who are rappers in the room (for the chat)
+module.exports.isRapperAndIsFinished = async (user_id, roomId) => {
+    const { rows } = await pool.query(
+        `SELECT * FROM user_connected 
+        WHERE id = $1 AND room_id = $2 AND in_queue = true AND is_rapper = true AND is_finished = true`, 
+        [user_id, roomId]);
+    return rows.length == 1;
+}

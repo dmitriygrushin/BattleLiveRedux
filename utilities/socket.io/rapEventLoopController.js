@@ -165,8 +165,17 @@ async function countDown(io, socket, roomId, seconds, timerCount, rappers) {
                             // check if a rapper left the room
                             if (rappers[0] == undefined || rappers[1] == undefined) {
                                 // announce winner
-                                if (rappers[0] == undefined) io.to(roomId).emit('winner-voted', rappers[1].username);
-                                if (rappers[1] == undefined) io.to(roomId).emit('winner-voted', rappers[0].username);
+                                if (rappers[0] == undefined) {
+                                    io.to(roomId).emit('winner-voted', rappers[1].username);
+                                    await pool.query(`UPDATE user_stats SET win = win + 1 WHERE id = $1`, [rappers[1].user_id]);
+                                    await pool.query(`UPDATE user_connected SET is_finished = true where id = $1 AND is_rapper = true`, [rappers[1].user_id]);
+
+                                }
+                                if (rappers[1] == undefined) {
+                                    io.to(roomId).emit('winner-voted', rappers[0].username);
+                                    await pool.query(`UPDATE user_stats SET win = win + 1 WHERE id = $1`, [rappers[0].user_id]);
+                                    await pool.query(`UPDATE user_connected SET is_finished = true where id = $1 AND is_rapper = true`, [rappers[0].user_id]);
+                                }
                                 // skip voting and announcing of winner case since it's already been done above
                                 await countDown(io, socket, roomId, 10, 7, rappers);
                                 break;
@@ -225,9 +234,12 @@ async function calculateRoomVotes(io, roomId) {
     const rappers = await getRappersInRoom(roomId);
     const rapper1 = {'id': rappers[0].user_id};
     const rapper2 = {'id': rappers[1].user_id};
+    await pool.query(`UPDATE user_connected SET is_finished = true where id = $1 AND is_rapper = true`, [rappers[0].user_id]);
+    await pool.query(`UPDATE user_connected SET is_finished = true where id = $1 AND is_rapper = true`, [rappers[1].user_id]);
 
     const map = new Map();
     let winner;
+    let loser;
     let draw = false;
     let userList = await io.in(roomId).fetchSockets(); 
     userList.forEach(socket => { 
@@ -257,7 +269,7 @@ async function calculateRoomVotes(io, roomId) {
     }
 
 
-    // [0]: id, [1]: vote #
+    // [0]: id, [1]: vote amount
     if (rapper1Votes != undefined && rapper2Votes != undefined) {
         if (rapper1Votes[1] > rapper2Votes[1]) {
             console.log('winner: rapper1');
@@ -271,13 +283,20 @@ async function calculateRoomVotes(io, roomId) {
         }
     }
 
-
-    // get username of the winner
     if (!draw) {
+        // get loser. can't user rapperXVotes[0] since the user may not have gotten any votes.
+        if (winner == rappers[0].user_id) loser = rappers[1].user_id;
+        if (winner == rappers[1].user_id) loser = rappers[0].user_id;
+
         const { rows } = await pool.query(`SELECT username FROM user_account WHERE id = $1`, [winner]);
+        await pool.query(`UPDATE user_stats SET win = win + 1 WHERE id = $1`, [winner]);
+        await pool.query(`UPDATE user_stats SET loss = loss + 1 WHERE id = $1`, [loser]);
         return rows[0].username;
     }
 
+    // in-case no one voted then rapperXVotes will be undefined so DB call is made
+    await pool.query(`UPDATE user_stats SET draw = draw + 1 WHERE id = $1`, [rappers[0].user_id]);
+    await pool.query(`UPDATE user_stats SET draw = draw + 1 WHERE id = $1`, [rappers[1].user_id]);
     return 'DRAW!';
 }
 
