@@ -1,15 +1,10 @@
 const express = require('express');
 const app = express();
-/*
-const sslCert = require('./ssl/cert.pem');
-const sslKey = require('./ssl/key.pem');
-*/
 
 const fs = require('fs');
 const path = require('path');
 const httpolyglot = require('httpolyglot');
 
-// insert your own ssl certificate and keys
 const options = {
     key: fs.readFileSync(path.join(__dirname,'.','ssl','key.pem'), 'utf-8'),
     cert: fs.readFileSync(path.join(__dirname,'.','ssl','cert.pem'), 'utf-8')
