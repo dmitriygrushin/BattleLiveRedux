@@ -7,6 +7,9 @@ const cancelVoteButton = document.getElementById('cancelVoteButton');
 
 document.getElementById('voted-p').style.visibility = 'hidden';
 
+document.getElementById("warningCameraModal").click();
+document.getElementById("warningCameraModal").style.display = "none";
+
 voteButton.disabled = true;
 
 module.exports.rapEventLoopController = (socket, peers, localStream) => {
