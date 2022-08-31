@@ -162,15 +162,24 @@ async function countDown(io, socket, roomId, seconds, timerCount, rappers) {
                         // vote
                         {
                             const rappers = await getRappersInRoom(roomId);
-                            // check if a rapper left the room
+                            /**
+                             * if both rappers LEFT the room (both rappers would get loss++ when upon disconnecting in the disconnectController)
+                             */
+                            if (rappers[0] == undefined && rappers[1] == undefined) {
+                                await countDown(io, socket, roomId, 10, 7, rappers);
+                                break;
+                            }
+                            /**
+                             * if 1 rapper LEFT the room
+                             */
                             if (rappers[0] == undefined || rappers[1] == undefined) {
                                 // announce winner
                                 if (rappers[0] == undefined) {
                                     io.to(roomId).emit('winner-voted', rappers[1].username);
                                     await pool.query(`UPDATE user_stats SET win = win + 1 WHERE id = $1`, [rappers[1].user_id]);
                                     await pool.query(`UPDATE user_connected SET is_finished = true where id = $1 AND is_rapper = true`, [rappers[1].user_id]);
-
                                 }
+
                                 if (rappers[1] == undefined) {
                                     io.to(roomId).emit('winner-voted', rappers[0].username);
                                     await pool.query(`UPDATE user_stats SET win = win + 1 WHERE id = $1`, [rappers[0].user_id]);
@@ -184,6 +193,9 @@ async function countDown(io, socket, roomId, seconds, timerCount, rappers) {
                             const rapper2 = {'id': rappers[1].user_id, 'username': rappers[1].username};
                             io.to(roomId).emit('vote-setup', rapper1, rapper2);
                         }
+                        /**
+                         * if both rappers are STILL in the room
+                         */
                         await countDown(io, socket, roomId, 10, ++timerCount, rappers);
                         io.to(roomId).emit('vote-rapper');
                         break;
