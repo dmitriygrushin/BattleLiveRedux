@@ -1,22 +1,20 @@
 const { addUserToQueue, isRapRoom, getRappersInRoom, 
     checkRoomRequirements, rappersReady, chooseRappers, makeRapRoom, rappersBeenChosen, makeNotRapRoom } = require('./db');
 
-async function rapEventLoopController (io, socket, roomId) {
+const { pool } = require('../../dbConfig');
 
-    // update user in user_connected table to is_rapper to true if they are in_queue
-    /*
-    socket.on('become-rapper', async (roomId, userId) => {
-        if (await isInQueueAndNotRapper(roomId, userId) == true) {
-            await makeRapper(roomId, userId);
-            io.to(socket.id).emit('give-stream-permission') // give stream permission to user
-        }
-    });
-    */
+async function rapEventLoopController (io, socket, roomId) {
+    socket.data.user = {'vote': -1}; // initial user data. 
 
     socket.on('display-stream', () => {
         // signal all users to allow the stream to be displayed
         socket.broadcast.to(roomId).emit('display-stream', socket.id); 
         console.log("socket.on('display-stream')");
+    });
+
+    // user_id of the user they voted for
+    socket.on('vote-rapper', id => {
+        socket.data.user.vote = id;
     });
 
     /**
@@ -74,8 +72,17 @@ async function giveStreamPermission(io, socketId, socket) {
 async function setupRappers(io, socket, roomId) {
     // get rappers in room
     const rappers = await getRappersInRoom(roomId);
+
+    /**
+     * Setup vote form when rappers are being setup
+     */
+    const rapper1 = {'id': rappers[0].user_id, 'username': rappers[0].username};
+    const rapper2 = {'id': rappers[1].user_id, 'username': rappers[1].username};
+    io.to(roomId).emit('vote-setup', rapper1, rapper2);
+
+    // send what rappers are battling
     io.to(roomId).emit('rapper-vs-rapper', `${rappers[0].username} vs ${rappers[1].username}`);
-    console.log('setupRappers Function');
+
     // send signal to rappers to allow stream to be displayed 
     for (let i = 0; i < rappers.length; i++) {
         await giveStreamPermission(io, rappers[i].socket_id, socket);
@@ -83,7 +90,6 @@ async function setupRappers(io, socket, roomId) {
 
     // give chosen rappers stream permission
     await startTimers(io, socket, roomId);  
-
 }
 
 async function refreshRappers(io, socket, roomId) {
@@ -95,7 +101,7 @@ async function refreshRappers(io, socket, roomId) {
 
 async function countDown(io, socket, roomId, seconds, timerCount, rappers) {
     let timer = setInterval(async () => {
-        if (timerCount <= 7) {
+        if (timerCount <= 8) {
             switch(timerCount) {
                 case 1:
                     io.to(roomId).emit('timer', `Get Ready! Everyone!`, seconds);
@@ -122,6 +128,10 @@ async function countDown(io, socket, roomId, seconds, timerCount, rappers) {
                     io.to(roomId).emit('rappers-finished', rappers[1].socket_id);
                     break;
                 case 7:
+                    // announce winner
+                    io.to(roomId).emit('timer', 'Vote', 0);
+                    break;
+                case 8:
                     io.to(roomId).emit('timer', 'Getting next rappers ready...', seconds);
                     //io.to(roomId).emit('rappers-finished', rappers[0].socket_id);
                     //io.to(roomId).emit('rappers-finished', rappers[1].socket_id);
@@ -150,33 +160,144 @@ async function countDown(io, socket, roomId, seconds, timerCount, rappers) {
                         break;
                     case 5:
                         // vote
-                        await countDown(io, socket, roomId, 5, ++timerCount, rappers);
+                        {
+                            const rappers = await getRappersInRoom(roomId);
+                            // check if a rapper left the room
+                            if (rappers[0] == undefined || rappers[1] == undefined) {
+                                // announce winner
+                                if (rappers[0] == undefined) {
+                                    io.to(roomId).emit('winner-voted', rappers[1].username);
+                                    await pool.query(`UPDATE user_stats SET win = win + 1 WHERE id = $1`, [rappers[1].user_id]);
+                                    await pool.query(`UPDATE user_connected SET is_finished = true where id = $1 AND is_rapper = true`, [rappers[1].user_id]);
+
+                                }
+                                if (rappers[1] == undefined) {
+                                    io.to(roomId).emit('winner-voted', rappers[0].username);
+                                    await pool.query(`UPDATE user_stats SET win = win + 1 WHERE id = $1`, [rappers[0].user_id]);
+                                    await pool.query(`UPDATE user_connected SET is_finished = true where id = $1 AND is_rapper = true`, [rappers[0].user_id]);
+                                }
+                                // skip voting and announcing of winner case since it's already been done above
+                                await countDown(io, socket, roomId, 10, 7, rappers);
+                                break;
+                            }
+                            const rapper1 = {'id': rappers[0].user_id, 'username': rappers[0].username};
+                            const rapper2 = {'id': rappers[1].user_id, 'username': rappers[1].username};
+                            io.to(roomId).emit('vote-setup', rapper1, rapper2);
+                        }
+                        await countDown(io, socket, roomId, 10, ++timerCount, rappers);
+                        io.to(roomId).emit('vote-rapper');
                         break;
                     case 6:
-                        // Getting next rappers ready...
-                        io.to(roomId).emit('rapper-vs-rapper', `_ vs _`);
-                        io.to(roomId).emit('timer', 'Pending', '-1');
-                        await refreshRappers(io, socket, roomId);
-
-                        await countDown(io, socket, roomId, 20, ++timerCount, rappers);
+                        // announce winner
+                        io.to(roomId).emit('winner-voted', await calculateRoomVotes(io, roomId));
+                        await countDown(io, socket, roomId, 10, ++timerCount, rappers);
                         break;
                     case 7:
-                        await countDown(io, socket, roomId, 35, ++timerCount, rappers);
+                        // Getting next rappers ready...
+                        io.to(roomId).emit('rapper-vs-rapper', `_ vs _`);
+                        //io.to(roomId).emit('timer', 'Pending', '-1');
+                        await refreshRoomVotes(io, roomId);
+                        await refreshRappers(io, socket, roomId);
+                        io.to(roomId).emit('winner-voted', '_');
+
+                        await countDown(io, socket, roomId, 5, ++timerCount, rappers);
+                        break;
+                    case 8:
+                        io.to(roomId).emit('timer', 'Pending', '-1');
+                        await countDown(io, socket, roomId, 5, ++timerCount, rappers);
                         break;
                 }
             }
         } else {
             await makeNotRapRoom(roomId);
             await rapRoomEventLoop(io, socket, roomId);
-                /*
-                io.to(roomId).emit('rapper-vs-rapper', `_ vs _`);
-                io.to(roomId).emit('timer', 'Pending', '-1');
-                await refreshRappers(io, socket, roomId);
-                await makeNotRapRoom(roomId);
-                */
-                clearInterval(timer);
+            /*
+            io.to(roomId).emit('rapper-vs-rapper', `_ vs _`);
+            io.to(roomId).emit('timer', 'Pending', '-1');
+            await refreshRappers(io, socket, roomId);
+            await makeNotRapRoom(roomId);
+            */
+            clearInterval(timer);
+        }
+    }, 1000);
+}
+
+
+async function refreshRoomVotes(io, roomId) {
+    let userList = await io.in(roomId).fetchSockets(); 
+    userList.forEach(socket => { socket.data.user.vote = -1; });
+    io.to(roomId).emit('refresh-votes');
+}
+
+
+async function calculateRoomVotes(io, roomId) {
+    const rappers = await getRappersInRoom(roomId);
+    const rapper1 = {'id': rappers[0].user_id};
+    const rapper2 = {'id': rappers[1].user_id};
+    await pool.query(`UPDATE user_connected SET is_finished = true where id = $1 AND is_rapper = true`, [rappers[0].user_id]);
+    await pool.query(`UPDATE user_connected SET is_finished = true where id = $1 AND is_rapper = true`, [rappers[1].user_id]);
+
+    const map = new Map();
+    let winner;
+    let loser;
+    let draw = false;
+    let userList = await io.in(roomId).fetchSockets(); 
+    userList.forEach(socket => { 
+        if (socket.data.user.vote != -1 || socket.data.user.vote == rapper1.id || socket.data.user.vote == rapper2.id) {
+            if (map.has(socket.data.user.vote)) {
+                // increment occurrence
+                map.set(socket.data.user.vote, map.get(socket.data.user.vote) + 1);
+            } else {
+                // initialize occurrence
+                map.set(socket.data.user.vote, 1);
             }
-        }, 1000);
+        }
+    });
+
+    const rapper1Votes = [...map][0];
+    const rapper2Votes = [...map][1];
+
+    // undefined is if no one voted for the rapper
+    if (rapper1Votes == undefined && rapper2Votes == undefined) {
+        draw = true;
+    } else if (rapper1Votes == undefined) {
+        console.log('winner: rapper2: ' + rapper2Votes[0]);
+        winner = rapper2Votes[0];
+    } else if (rapper2Votes == undefined) {
+        console.log('winner: rapper1: ' + rapper1Votes[0]);
+        winner = rapper1Votes[0];
     }
+
+
+    // [0]: id, [1]: vote amount
+    if (rapper1Votes != undefined && rapper2Votes != undefined) {
+        if (rapper1Votes[1] > rapper2Votes[1]) {
+            console.log('winner: rapper1');
+            winner = rapper1Votes[0];
+        } else if (rapper1Votes[1] < rapper2Votes[1]) {
+            console.log('winner: rapper2');
+            winner = rapper2Votes[0];
+        } else {
+            console.log('draw');
+            draw = true;
+        }
+    }
+
+    if (!draw) {
+        // get loser. can't user rapperXVotes[0] since the user may not have gotten any votes.
+        if (winner == rappers[0].user_id) loser = rappers[1].user_id;
+        if (winner == rappers[1].user_id) loser = rappers[0].user_id;
+
+        const { rows } = await pool.query(`SELECT username FROM user_account WHERE id = $1`, [winner]);
+        await pool.query(`UPDATE user_stats SET win = win + 1 WHERE id = $1`, [winner]);
+        await pool.query(`UPDATE user_stats SET loss = loss + 1 WHERE id = $1`, [loser]);
+        return rows[0].username;
+    }
+
+    // in-case no one voted then rapperXVotes will be undefined so DB call is made
+    await pool.query(`UPDATE user_stats SET draw = draw + 1 WHERE id = $1`, [rappers[0].user_id]);
+    await pool.query(`UPDATE user_stats SET draw = draw + 1 WHERE id = $1`, [rappers[1].user_id]);
+    return 'DRAW!';
+}
 
 module.exports = { rapEventLoopController, rapRoomEventLoop }

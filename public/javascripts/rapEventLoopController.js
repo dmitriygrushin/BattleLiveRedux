@@ -1,9 +1,18 @@
 const addUserToQueueButton = document.getElementById('addUserToQueue');
 const timer = document.getElementById('timer');
+const voteButton = document.getElementById('voteButton');
+const rapper1VoteButton = document.getElementById('rapper1VoteButton');
+const rapper2VoteButton = document.getElementById('rapper2VoteButton');
+const cancelVoteButton = document.getElementById('cancelVoteButton');
 
+document.getElementById('voted-p').style.visibility = 'hidden';
+
+voteButton.disabled = true;
 
 module.exports.rapEventLoopController = (socket, peers, localStream) => {
     addUserToQueueButton.addEventListener('click', addUserToQueue);
+    rapper1VoteButton.addEventListener('click', voteButtonClick);
+    rapper2VoteButton.addEventListener('click', voteButtonClick);
 
     socket.on('display-stream', socket_id => {
         document.getElementById(socket_id).style.display = 'block';
@@ -13,8 +22,40 @@ module.exports.rapEventLoopController = (socket, peers, localStream) => {
         giveStreamPermission();
     });
 
+    socket.on('winner-voted', winner => {
+        document.getElementById('winnerHeading').innerHTML = `Winner: ${winner}`;
+        // exit the user out of the voting modal once winner has been decided
+        voteButton.disabled = true;
+        cancelVoteButton.click();
+    })
+
     socket.on('rapper-vs-rapper', rappers => {
         document.getElementById('rapper-vs-rapper').innerHTML = rappers;
+    });
+
+    socket.on('vote-setup', (rapper1, rapper2) => {
+        rapper1VoteButton.value = rapper1.id;
+        rapper1VoteButton.innerHTML = rapper1.username;
+
+        rapper2VoteButton.value = rapper2.id;
+        rapper2VoteButton.innerHTML = rapper2.username;
+    });
+
+    socket.on('vote-rapper', () => {
+        voteButton.disabled = false;
+        voteButton.click();
+    });
+
+    /**
+     * After rappers are refreshed refresh the voting buttons got get ready for next rappers
+     */
+    socket.on('refresh-votes', () => {
+        voteButton.disabled = true;
+        rapper1VoteButton.disabled = false;
+        rapper2VoteButton.disabled = false;
+        document.getElementById('voted-p').style.visibility = 'hidden';
+        rapper1VoteButton.className = 'btn btn-info'
+        rapper2VoteButton.className = 'btn btn-info'
     });
 
     socket.on('timer', (timerType, seconds) => {
@@ -76,6 +117,19 @@ module.exports.rapEventLoopController = (socket, peers, localStream) => {
         addUserToQueueButton.disabled = true;
     }	
 
+    function voteButtonClick(e) {
+        //console.log(e.target.innerHTML);
+        rapper1VoteButton.disabled = true;
+        rapper2VoteButton.disabled = true;
+        rapper1VoteButton.className = 'btn btn-secondary'
+        rapper2VoteButton.className = 'btn btn-secondary'
+        e.target.className = 'btn btn-success';
+        document.getElementById('voted-p').style.visibility = 'visible';
+
+        // send rapper id
+        socket.emit('vote-rapper', e.target.value);
+    }
+
     /**
      * Turns on stream track
      * @param {boolean} isOn - true to turn on, false to turn off
@@ -111,7 +165,6 @@ module.exports.rapEventLoopController = (socket, peers, localStream) => {
         streamOn(true); // enable stream
         socket.emit('display-stream'); // send request to server to turn on stream for all users
     }
-
 
     /**
      * updating text of buttons depending on the state of video/audio

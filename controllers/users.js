@@ -49,6 +49,7 @@ module.exports.register = async (req, res) => {
             res.render('register', { errors });
         } else {
             const results = await pool.query(`INSERT INTO user_account (username, email, password) VALUES ($1, $2, $3) RETURNING id, password`, [username, email, hashedPassword]);
+            await pool.query(`INSERT INTO user_stats (id) VALUES ($1)`, [results.rows[0].id]);
             //console.log(results.rows);
             req.flash('success_msg', 'You are now registered please log in');
             res.redirect('/users/login');
