@@ -144,55 +144,43 @@ async function countDown(io, socket, roomId, seconds, timerCount, rappers) {
                 switch(timerCount) {
                     case 1:
                         // get ready rapper1
+                        if (await handleIfRappersLeftRoom(io, roomId)) {
+                            await countDown(io, socket, roomId, 10, 7, rappers);
+                            break;
+                        }
                         await countDown(io, socket, roomId, 5, ++timerCount, rappers);
                         break;
                     case 2:
                         // rapper1 turn
+                        if (await handleIfRappersLeftRoom(io, roomId)) {
+                            await countDown(io, socket, roomId, 10, 7, rappers);
+                            break;
+                        }
                         await countDown(io, socket, roomId, 5, ++timerCount, rappers);
                         break;
                     case 3:
                         // get ready rapper2
+                        if (await handleIfRappersLeftRoom(io, roomId)) {
+                            await countDown(io, socket, roomId, 10, 7, rappers);
+                            break;
+                        }
                         await countDown(io, socket, roomId, 5, ++timerCount, rappers);
                         break;
                     case 4:
                         // rapper2 turn
+                        if (await handleIfRappersLeftRoom(io, roomId)) {
+                            await countDown(io, socket, roomId, 10, 7, rappers);
+                            break;
+                        }
                         await countDown(io, socket, roomId, 5, ++timerCount, rappers);
                         break;
                     case 5:
                         // vote
-                        {
-                            const rappers = await getRappersInRoom(roomId);
-                            /**
-                             * if both rappers LEFT the room (both rappers would get loss++ when upon disconnecting in the disconnectController)
-                             */
-                            if (rappers[0] == undefined && rappers[1] == undefined) {
-                                await countDown(io, socket, roomId, 10, 7, rappers);
-                                break;
-                            }
-                            /**
-                             * if 1 rapper LEFT the room
-                             */
-                            if (rappers[0] == undefined || rappers[1] == undefined) {
-                                // announce winner
-                                if (rappers[0] == undefined) {
-                                    io.to(roomId).emit('winner-voted', rappers[1].username);
-                                    await pool.query(`UPDATE user_stats SET win = win + 1 WHERE id = $1`, [rappers[1].user_id]);
-                                    await pool.query(`UPDATE user_connected SET is_finished = true where id = $1 AND is_rapper = true`, [rappers[1].user_id]);
-                                }
-
-                                if (rappers[1] == undefined) {
-                                    io.to(roomId).emit('winner-voted', rappers[0].username);
-                                    await pool.query(`UPDATE user_stats SET win = win + 1 WHERE id = $1`, [rappers[0].user_id]);
-                                    await pool.query(`UPDATE user_connected SET is_finished = true where id = $1 AND is_rapper = true`, [rappers[0].user_id]);
-                                }
-                                // skip voting and announcing of winner case since it's already been done above
-                                await countDown(io, socket, roomId, 10, 7, rappers);
-                                break;
-                            }
-                            const rapper1 = {'id': rappers[0].user_id, 'username': rappers[0].username};
-                            const rapper2 = {'id': rappers[1].user_id, 'username': rappers[1].username};
-                            io.to(roomId).emit('vote-setup', rapper1, rapper2);
+                        if (await handleIfRappersLeftRoom(io, roomId)) {
+                            await countDown(io, socket, roomId, 10, 7, rappers);
+                            break;
                         }
+                        
                         /**
                          * if both rappers are STILL in the room
                          */
@@ -234,6 +222,40 @@ async function countDown(io, socket, roomId, seconds, timerCount, rappers) {
     }, 1000);
 }
 
+async function handleIfRappersLeftRoom(io, roomId) {
+    const rappers = await getRappersInRoom(roomId);
+    /**
+     * if both rappers LEFT the room (both rappers would get loss++ when upon disconnecting in the disconnectController)
+     */
+    if (rappers[0] == undefined && rappers[1] == undefined) {
+        //await countDown(io, socket, roomId, 10, 7, rappers);
+        return true;
+    }
+    /**
+     * if 1 rapper LEFT the room
+     */
+    if (rappers[0] == undefined || rappers[1] == undefined) {
+        // announce winner
+        if (rappers[0] == undefined) {
+            io.to(roomId).emit('winner-voted', rappers[1].username);
+            await pool.query(`UPDATE user_stats SET win = win + 1 WHERE id = $1`, [rappers[1].user_id]);
+            await pool.query(`UPDATE user_connected SET is_finished = true where id = $1 AND is_rapper = true`, [rappers[1].user_id]);
+        }
+
+        if (rappers[1] == undefined) {
+            io.to(roomId).emit('winner-voted', rappers[0].username);
+            await pool.query(`UPDATE user_stats SET win = win + 1 WHERE id = $1`, [rappers[0].user_id]);
+            await pool.query(`UPDATE user_connected SET is_finished = true where id = $1 AND is_rapper = true`, [rappers[0].user_id]);
+        }
+        // skip voting and announcing of winner case since it's already been done above
+        //await countDown(io, socket, roomId, 10, 7, rappers);
+        return true;
+    }
+    const rapper1 = {'id': rappers[0].user_id, 'username': rappers[0].username};
+    const rapper2 = {'id': rappers[1].user_id, 'username': rappers[1].username};
+    io.to(roomId).emit('vote-setup', rapper1, rapper2);
+    return false;
+}
 
 async function refreshRoomVotes(io, roomId) {
     let userList = await io.in(roomId).fetchSockets(); 
