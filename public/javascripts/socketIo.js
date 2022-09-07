@@ -4,17 +4,6 @@ const { webRtcController } = require("./webRtcController");
 const { clientStreamButtonController } = require("./clientStreamButtonController");
 const { rapEventLoopController } = require("./rapEventLoopController");
 
-/*
-    TODO: Working on making a user a rapper. Last thing done was emit('become-rapper')
-    essentially: 
-    1. user joins queue. 
-    2. clicks become rapper 
-    3. the server should allow the user to user their cam. 
-    4. Users joining after should also see the rapper's cam
-
-    Things such as the getTwoRappers function will be implemented for the event-loop (user story)
-    and will be called by the server
-*/
 let socket;
 let localStream = null;
 let peers = {};
@@ -75,7 +64,6 @@ function streamOn(isOn) {
             peers[socket_id].streams[0].getTracks()[index].enabled = isOn; 
         }
     }
-    // TODO: sync button text with whether or not the stream audio/video is on or off.
     // for good measure - webRTC is unpredictable
     for (let index in localStream.getVideoTracks()) {
         localStream.getVideoTracks()[index].enabled = isOn;

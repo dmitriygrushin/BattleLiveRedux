@@ -6,10 +6,6 @@ const rapper2VoteButton = document.getElementById('rapper2VoteButton');
 const cancelVoteButton = document.getElementById('cancelVoteButton');
 
 document.getElementById('voted-p').style.visibility = 'hidden';
-
-document.getElementById("warningCameraModal").click();
-document.getElementById("warningCameraModal").style.display = "none";
-
 voteButton.disabled = true;
 
 module.exports.rapEventLoopController = (socket, peers, localStream) => {
@@ -145,7 +141,6 @@ module.exports.rapEventLoopController = (socket, peers, localStream) => {
                 peers[socket_id].streams[0].getTracks()[index].enabled = isOn; 
             }
         }
-        // TODO: sync button text with whether or not the stream audio/video is on or off.
         // for good measure - webRTC is unpredictable
         for (let index in localStream.getVideoTracks()) {
             localStream.getVideoTracks()[index].enabled = isOn;
