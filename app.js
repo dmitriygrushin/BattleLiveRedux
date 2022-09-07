@@ -1,18 +1,20 @@
 const express = require('express');
 const app = express();
 
-const fs = require('fs');
+//const fs = require('fs');
 const path = require('path');
-const httpolyglot = require('httpolyglot');
+const http = require('http');
 
+/*
 const options = {
     key: fs.readFileSync(path.join(__dirname,'.','ssl','key.pem'), 'utf-8'),
     cert: fs.readFileSync(path.join(__dirname,'.','ssl','cert.pem'), 'utf-8')
 }
+*/
 
 //const { socketIo } = require('./utilities/socket.io/socket.io');
 
-const session = require('express-session');
+const session = require('cookie-session');
 const flash = require('express-flash');
 
 const methodOverride = require('method-override')
@@ -58,7 +60,7 @@ app.use('/users', userRoutes);
 app.use('/rooms', roomRoutes);
 
 
-const httpsServer = httpolyglot.createServer(options, app);
+const httpsServer = http.createServer(app);
 const io = require('socket.io')(httpsServer);
 require('./utilities/socket.io/socketController')(io);
 

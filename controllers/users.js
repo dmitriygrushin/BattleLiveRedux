@@ -16,11 +16,9 @@ module.exports.dashboardView = (req, res) => {
 };
 
 module.exports.logout = (req, res, next) => {
-  req.logout((err) => {
-    if (err) return next(err); 
+    req.logout();
     req.flash('success_msg', 'You have logged out');
     res.redirect('/users/login');
-  });
 };
 
 module.exports.register = async (req, res) => {

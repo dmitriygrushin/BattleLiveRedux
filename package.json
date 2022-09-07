@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.0.1",
+    "cookie-session": "^2.0.0",
     "dotenv": "^16.0.1",
     "ejs": "^3.1.8",
     "ejs-mate": "^4.0.0",
@@ -22,7 +23,7 @@
     "httpolyglot": "^0.1.2",
     "method-override": "^3.0.0",
     "nodemon": "^2.0.18",
-    "passport": "^0.6.0",
+    "passport": "^0.5.3",
     "passport-local": "^1.0.0",
     "pg": "^8.7.3",
     "simple-peer": "^9.11.1",
