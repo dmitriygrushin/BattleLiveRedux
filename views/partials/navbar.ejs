@@ -38,8 +38,8 @@
           </li>
           <% } %> 
       </ul>
-      <form id="form" class="d-flex" method="get">
-        <input class="form-control me-sm-2" type="text" name="url" onchange="document.getElementById('form').action = `/rooms/${this.value}/rapRoom`;" placeholder="Enter the Room #" required>
+      <form id="nav-form" class="d-flex" method="get">
+        <input class="form-control me-sm-2" type="text" name="url" onchange="document.getElementById('nav-form').action = `/rooms/${this.value}/rapRoom`;" placeholder="Enter the Room #" required>
         <input class="btn btn-secondary my-2 my-sm-0" type="submit" value="Search">
       </form>
     </div>
