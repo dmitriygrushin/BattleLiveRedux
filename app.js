@@ -24,7 +24,7 @@ const flash = require('express-flash');
 const methodOverride = require('method-override')
 const ejsMate = require('ejs-mate');
 
-const { hasRoom } = require('./middleware/hasRoom');
+const { hasRoom, getUserStats } = require('./middleware/hasRoom');
 
 const passport = require('passport');
 const initializePassport = require('./passportConfig');
@@ -49,6 +49,7 @@ app.use(async (req, res, next) => {
     res.locals.authenticatedUser = req.user;
     res.locals.currentUrl = req.url;
     if (req.user) {
+        res.locals.authenticatedUser.username += ` ${await getUserStats(req.user.id)} `;
         const userRoomId = await hasRoom(req.user.id);
         res.locals.authenticatedUserRoomId = (userRoomId == undefined) ? false : userRoomId.id; 
     }
