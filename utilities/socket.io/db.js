@@ -181,9 +181,17 @@ module.exports.rappersBeenChosen = async (roomId) => {
 
 // get all users from user_connected who are rappers in the room (for the chat)
 module.exports.isRapperAndIsFinished = async (user_id, roomId) => {
-    const { rows } = await pool.query(
+    // finished rapper
+    const { rows : rows1 } = await pool.query(
         `SELECT * FROM user_connected 
         WHERE id = $1 AND room_id = $2 AND in_queue = true AND is_rapper = true AND is_finished = true`, 
         [user_id, roomId]);
-    return rows.length == 1;
+
+    // NOT rapper
+    const { rows : rows2 } = await pool.query(
+        `SELECT * FROM user_connected 
+        WHERE id = $1 AND room_id = $2 AND in_queue = false AND is_rapper = false AND is_finished = false`, 
+        [user_id, roomId]);
+
+    return rows1.length == 1 || rows2.length == 1;
 }
