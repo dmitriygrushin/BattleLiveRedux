@@ -1,9 +1,13 @@
 const express = require('express');
 const app = express();
 
-//const fs = require('fs');
+require("dotenv").config();
+const isProduction = process.env.NODE_ENV === "production";
+
+const fs = require('fs');
 const path = require('path');
-const http = require('http');
+const http = isProduction ? require('http') : require('httpolyglot');
+
 
 /*
 const options = {
@@ -59,8 +63,7 @@ app.get('/', (req, res) => {
 app.use('/users', userRoutes);
 app.use('/rooms', roomRoutes);
 
-
-const httpsServer = http.createServer(app);
+const httpsServer = isProduction ? http.createServer(app) : http.createServer({ key: fs.readFileSync(path.join(__dirname,'.','ssl','key.pem'), 'utf-8'), cert: fs.readFileSync(path.join(__dirname,'.','ssl','cert.pem'), 'utf-8') }, app);
 const io = require('socket.io')(httpsServer);
 require('./utilities/socket.io/socketController')(io);
 

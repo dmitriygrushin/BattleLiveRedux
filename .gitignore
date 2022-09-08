@@ -3,6 +3,7 @@
 npm-debug.log
 .DS_Store
 /*.env
+ssl/
 
 # Logs
 logs
