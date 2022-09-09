@@ -15,6 +15,6 @@ Still a work in progress... but coming along well!
 ## DEMO 
 (Please Note there are some bugs and security vulnerabilities. SQL injections, XXS, ...)
 
-https://calm-island-99340.herokuapp.com/
+https://battle-live.herokuapp.com/
 
 
