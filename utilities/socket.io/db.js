@@ -196,5 +196,16 @@ module.exports.isRapperAndIsFinished = async (user_id, roomId) => {
         WHERE id = $1 AND room_id = $2 AND in_queue = false AND is_rapper = false AND is_finished = false`, 
         [user_id, roomId]);
 
-    return rows1.length == 1 || rows2.length == 1;
+    // NOT rapper but in_queue
+    const { rows : rows3 } = await pool.query(
+        `SELECT * FROM user_connected 
+        WHERE id = $1 AND room_id = $2 AND in_queue = true AND is_rapper = false AND is_finished = false`, 
+        [user_id, roomId]);
+
+    console.log(`isRapperAndIsFinished rows1: ${rows1.length == 1}`);
+    console.log(`isRapperAndIsFinished rows1: ${rows2.length == 1}`);
+    console.log(`isRapperAndIsFinished rows1: ${rows3.length == 1}`);
+    console.log(`isRapperAndIsFinished rows1 & rows2: ${rows1.length == 1 || rows2.length == 1 || rows3.length == 1}`);
+
+    return rows1.length == 1 || rows2.length == 1 || rows3.length == 1;
 }
