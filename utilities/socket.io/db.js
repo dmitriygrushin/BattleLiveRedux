@@ -5,9 +5,11 @@ module.exports.addUserToRoom = async (roomId, userId, socket_id) => {
     await pool.query(`INSERT INTO user_connected (id, room_id, socket_id) VALUES($1, $2, $3)`, [userId, roomId, socket_id]);
 }
 
-// remove users from room table
+// remove users from room table and user_queue
 module.exports.removeUserFromRoom = async (roomId, userId) => {
     await pool.query(`DELETE FROM user_connected WHERE id = $1 AND room_id = $2`, [userId, roomId]);
+    await pool.query(`DELETE FROM user_queue WHERE id = $1 AND room_id = $2`, [userId, roomId]);
+
 }
 
 // get all users in a room
@@ -34,11 +36,17 @@ module.exports.getRappersInRoom = async (roomId) => {
     return rows;
 }
 
-// change user in user_connected table in_queue to true 
+/* 
+    change user in user_connected table in_queue to true 
+    add user to user_queue which gives them a position in the queue of the room
+        an iterable # is assigned to the user
+*/ 
 module.exports.addUserToQueue = async (roomId, userId) => {
     await pool.query(
         `UPDATE user_connected SET in_queue = true 
         WHERE id = $1 AND room_id = $2`, [userId, roomId]);
+
+    await pool.query(`INSERT INTO user_queue (id, room_id) VALUES($1, $2)`, [userId, roomId]);
 } 
 
 // change user in user_connected table to is_rapper to true if they are in_queue
@@ -117,15 +125,10 @@ module.exports.checkRoomRequirements = async (roomId) => {
 }
 
 module.exports.chooseRappers = async (roomId) => {
-    // out of the rappers in the room who are in_queue, choose 2 to be rappers update is_rapper to true
+    // get the first 2 users in the user_queue table by room_id
     const { rows } = await pool.query(
-        `SELECT user_connected.id AS user_id,
-        user_connected.room_id as room_id,
-        user_connected.is_rapper as is_rapper,
-        user_connected.in_queue as in_queue
-        FROM user_connected
-        WHERE room_id = $1 AND in_queue = true
-        LIMIT 2`, [roomId]);
+        `SELECT * FROM user_queue where room_id = $1 ORDER BY position ASC LIMIT 2`, 
+        [roomId]);
 
     // if the room has less than 2 rappers in_queue, return false
     if (rows.length < 2) {
@@ -135,10 +138,10 @@ module.exports.chooseRappers = async (roomId) => {
     // update is_rapper to true for the rappers in_queue
     await pool.query(
         `UPDATE user_connected SET is_rapper = true
-        WHERE id = $1 AND room_id = $2 AND in_queue = true`, [rows[0].user_id, roomId]);
+        WHERE id = $1 AND room_id = $2 AND in_queue = true`, [rows[0].id, roomId]);
     await pool.query(
         `UPDATE user_connected SET is_rapper = true
-        WHERE id = $1 AND room_id = $2 AND in_queue = true`, [rows[1].user_id, roomId]);
+        WHERE id = $1 AND room_id = $2 AND in_queue = true`, [rows[1].id, roomId]);
 
     console.log("chooseRappers function");
     return true;

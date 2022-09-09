@@ -6,5 +6,5 @@ const { pool } = require('./dbConfig');
 
 app.listen(PORT, async (req, res) => {
     console.log(`Listening on port: ${PORT}`);
-    await pool.query(`DELETE FROM user_connected; UPDATE room SET is_rap_room = false`);
+    await pool.query(`DELETE FROM user_connected; UPDATE room SET is_rap_room = false; DELETE FROM user_queue;`);
 });
