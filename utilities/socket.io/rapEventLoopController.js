@@ -129,7 +129,7 @@ async function countDown(io, socket, roomId, seconds, timerCount, rappers) {
                     break;
                 case 7:
                     // announce winner
-                    io.to(roomId).emit('timer', 'Vote', 0);
+                    io.to(roomId).emit('timer', 'Refreshing Rappers PLEASE do NOT leave', 0);
                     break;
                 case 8:
                     io.to(roomId).emit('timer', 'Getting next rappers ready...', seconds);
@@ -189,6 +189,12 @@ async function countDown(io, socket, roomId, seconds, timerCount, rappers) {
                         break;
                     case 6:
                         // announce winner
+                        // check that the rappers are in the room before calculating votes
+                        if (await handleIfRappersLeftRoom(io, roomId)) {
+                            await countDown(io, socket, roomId, 10, 7, rappers);
+                            break;
+                        }
+
                         io.to(roomId).emit('winner-voted', await calculateRoomVotes(io, roomId));
                         await countDown(io, socket, roomId, 10, ++timerCount, rappers);
                         break;
