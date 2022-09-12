@@ -1536,7 +1536,7 @@ module.exports.rapEventLoopController = (socket, peers, localStream, constraints
         }
     });
 
-    // allow both rappers to talk after they're done
+    // allow both rappers to talk after they're done (enable mics of both rappers)
     socket.on('rappers-finished', socket_id => {
         /*
         const videos = document.getElementsByTagName('video');
@@ -1554,7 +1554,6 @@ module.exports.rapEventLoopController = (socket, peers, localStream, constraints
 
         if (typeof(video) != 'undefined' && video != null) {
             video.classList.add('finished-rapper');
-            toggleMute(true); 
         }
     });
 
