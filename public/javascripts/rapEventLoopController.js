@@ -8,7 +8,13 @@ const cancelVoteButton = document.getElementById('cancelVoteButton');
 document.getElementById('voted-p').style.visibility = 'hidden';
 voteButton.disabled = true;
 
-module.exports.rapEventLoopController = (socket, peers, localStream) => {
+module.exports.rapEventLoopController = (socket, peers, localStream, constraints) => {
+
+    console.log(`------rapEventLoopController---------`);
+    console.log(`constraints.video : ${constraints.video}`);
+    console.log(`constraints.audio : ${constraints.audio}`);
+    console.log(`------rapEventLoopController---------`);
+
     addUserToQueueButton.addEventListener('click', addUserToQueue);
     rapper1VoteButton.addEventListener('click', voteButtonClick);
     rapper2VoteButton.addEventListener('click', voteButtonClick);
@@ -135,17 +141,34 @@ module.exports.rapEventLoopController = (socket, peers, localStream) => {
      * @param {boolean} isOn - true to turn on, false to turn off
      */
     function streamOn(isOn) {
-        for (let socket_id in peers) {
-            for (let index in peers[socket_id].streams[0].getTracks()) {
-                // disable all tracks
-                peers[socket_id].streams[0].getTracks()[index].enabled = isOn; 
+        if (constraints.video && constraints.audio) {
+            for (let socket_id in peers) {
+                for (let index in peers[socket_id].streams[0].getTracks()) {
+                    // disable all tracks
+                    peers[socket_id].streams[0].getTracks()[index].enabled = isOn; 
+                }
             }
         }
+
         // for good measure - webRTC is unpredictable
-        for (let index in localStream.getVideoTracks()) {
-            localStream.getVideoTracks()[index].enabled = isOn;
-            localStream.getAudioTracks()[index].enabled = false; // audio is false until it's the client's turn to rap
+        /*
+        */
+       
+        console.log(`constraints.video : ${constraints.video}`);
+        console.log(`constraints.audio : ${constraints.audio}`);
+        if (constraints.video) {
+            console.log(`constraints.video: ${constraints.video}`)
+            for (let index in localStream.getVideoTracks()) {
+                localStream.getVideoTracks()[index].enabled = isOn;
+            }
         }
+ 
+        if (constraints.audio) {
+            for (let index in localStream.getAudioTracks()) {
+                localStream.getAudioTracks()[index].enabled = false; // audio is false until it's the client's turn to rap
+            }
+        }
+
 
         const vidButton = document.getElementById('vidButton');
         const muteButton = document.getElementById('muteButton');
@@ -169,22 +192,28 @@ module.exports.rapEventLoopController = (socket, peers, localStream) => {
      * updating text of buttons depending on the state of video/audio
      */
     function updateButtons() {
-        for (let index in localStream.getVideoTracks()) {
-            document.getElementById('vidButton').innerText = localStream.getVideoTracks()[index].enabled ? "✔ Video Enabled" : "❌ Video Disabled"
-            document.getElementById('vidButton').className = localStream.getVideoTracks()[index].enabled ? "btn btn-danger" : " btn btn-success";
+        if (constraints.video) {
+            for (let index in localStream.getVideoTracks()) {
+                document.getElementById('vidButton').innerText = localStream.getVideoTracks()[index].enabled ? "✔ Video Enabled" : "❌ Video Disabled"
+                document.getElementById('vidButton').className = localStream.getVideoTracks()[index].enabled ? "btn btn-danger" : " btn btn-success";
+            }
         }
-        for (let index in localStream.getAudioTracks()) {
-            document.getElementById('muteButton').innerText = localStream.getAudioTracks()[index].enabled ? "✔ Unmuted" : "❌ Muted"
-            document.getElementById('muteButton').className = localStream.getAudioTracks()[index].enabled ? "btn btn-danger" : "btn btn-success";
+        if (constraints.audio) {
+            for (let index in localStream.getAudioTracks()) {
+                document.getElementById('muteButton').innerText = localStream.getAudioTracks()[index].enabled ? "✔ Unmuted" : "❌ Muted"
+                document.getElementById('muteButton').className = localStream.getAudioTracks()[index].enabled ? "btn btn-danger" : "btn btn-success";
+            }
         }
     }
 
     function toggleMute(isOn) {
-        for (let index in localStream.getAudioTracks()) {
-            localStream.getAudioTracks()[index].enabled = isOn;
-            muteButton.innerText = localStream.getAudioTracks()[index].enabled ? "Unmuted" : "Muted"
-            muteButton.className = localStream.getAudioTracks()[index].enabled ? "btn btn-danger" : "btn btn-success"
+        if (constraints.audio) {
+            for (let index in localStream.getAudioTracks()) {
+                localStream.getAudioTracks()[index].enabled = isOn;
+                muteButton.innerText = localStream.getAudioTracks()[index].enabled ? "Unmuted" : "Muted"
+                muteButton.className = localStream.getAudioTracks()[index].enabled ? "btn btn-danger" : "btn btn-success"
+            }
+            updateButtons(); 
         }
-        updateButtons(); 
     }
 }
