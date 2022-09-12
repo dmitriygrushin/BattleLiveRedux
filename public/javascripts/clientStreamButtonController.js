@@ -1,4 +1,4 @@
-module.exports.clientStreamButtonController = (localStream) => {
+module.exports.clientStreamButtonController = (localStream, constraints) => {
     const vidButton = document.getElementById('vidButton');
     vidButton.addEventListener('click', toggleVid)
 
@@ -23,37 +23,48 @@ module.exports.clientStreamButtonController = (localStream) => {
      * Enable/disable video
      */
     function toggleVid() {
-        for (let index in localStream.getVideoTracks()) {
-            localStream.getVideoTracks()[index].enabled = !localStream.getVideoTracks()[index].enabled;
-            vidButton.innerText = localStream.getVideoTracks()[index].enabled ? "Video Enabled" : "Video Disabled";
-            vidButton.className = localStream.getVideoTracks()[index].enabled ? "btn btn-danger" : "btn btn-success";
+        if (constraints.video){
+            for (let index in localStream.getVideoTracks()) {
+                localStream.getVideoTracks()[index].enabled = !localStream.getVideoTracks()[index].enabled;
+                vidButton.innerText = localStream.getVideoTracks()[index].enabled ? "Video Enabled" : "Video Disabled";
+                vidButton.className = localStream.getVideoTracks()[index].enabled ? "btn btn-danger" : "btn btn-success";
+            }
+            updateButtons(); 
         }
-        updateButtons(); 
     }
 
     /**
      * Enable/disable microphone
      */
     function toggleMute() {
-        for (let index in localStream.getAudioTracks()) {
-            localStream.getAudioTracks()[index].enabled = !localStream.getAudioTracks()[index].enabled
-            muteButton.innerText = localStream.getAudioTracks()[index].enabled ? "Unmuted" : "Muted"
-            muteButton.className = localStream.getAudioTracks()[index].enabled ? "btn btn-danger" : "btn btn-success"
+        if (constraints.audio) {
+            for (let index in localStream.getAudioTracks()) {
+                localStream.getAudioTracks()[index].enabled = !localStream.getAudioTracks()[index].enabled
+                muteButton.innerText = localStream.getAudioTracks()[index].enabled ? "Unmuted" : "Muted"
+                muteButton.className = localStream.getAudioTracks()[index].enabled ? "btn btn-danger" : "btn btn-success"
+            }
+            updateButtons(); 
         }
-        updateButtons(); 
     }
 
     /**
      * updating text of buttons depending on the state of video/audio
      */
     function updateButtons() {
-        for (let index in localStream.getVideoTracks()) {
-            document.getElementById('vidButton').innerText = localStream.getVideoTracks()[index].enabled ? "✔ Video Enabled" : "❌ Video Disabled"
-            document.getElementById('vidButton').className = localStream.getVideoTracks()[index].enabled ? "btn btn-danger" : "btn btn-success";
+        if (constraints.video) {
+            for (let index in localStream.getVideoTracks()) {
+                document.getElementById('vidButton').innerText = localStream.getVideoTracks()[index].enabled ? "✔ Video Enabled" : "❌ Video Disabled"
+                document.getElementById('vidButton').className = localStream.getVideoTracks()[index].enabled ? "btn btn-danger" : "btn btn-success";
+            }
         }
-        for (let index in localStream.getAudioTracks()) {
-            document.getElementById('muteButton').innerText = localStream.getAudioTracks()[index].enabled ? "✔ Unmuted" : "❌ Muted"
-            document.getElementById('muteButton').className = localStream.getVideoTracks()[index].enabled ? "btn btn-danger" : "btn btn-success";
+
+        if (constraints.audio) {
+            for (let index in localStream.getAudioTracks()) {
+                document.getElementById('muteButton').innerText = localStream.getAudioTracks()[index].enabled ? "✔ Unmuted" : "❌ Muted"
+                document.getElementById('muteButton').className = localStream.getAudioTracks()[index].enabled ? "btn btn-danger" : "btn btn-success";
+                // may be a bug: document.getElementById('muteButton').className = localStream.getVideoTracks()[index].enabled ? "btn btn-danger" : "btn btn-success";
+            }
         }
+
     }
 }

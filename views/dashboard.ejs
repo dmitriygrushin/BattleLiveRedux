@@ -20,16 +20,23 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <p>Please be aware that when you join a room your camera is being used but NOT displayed. </p>
+        <p>Please be aware that when you join a room your camera is being used but NOT displayed. (If you gave permission)</p>
         <p>If you are in queue please be mindful of your camera since you may be chosen at any moment.</p>
         <p>Rules:</p>
         <p>1. Join Room</p>
-        <p>2. Enable camera & microphone (if you haven't already)</p>
+        <p>2. Enable camera & microphone or microphone (if you haven't already to participate)</p>
         <p>3. Join Queue, wait...</p>
         <p>4. Rap and have fun!</p>
         <p>NOTE: Since it the application is still in the testing phase rapping, voting, ... will be a few seconds long.</p>
         <p>Thank you! :)</p>
+
+        <p>Please click the button below to give access for Video and/or Audio. You can still enjoy BattleLive 
+          without giving permission but you will need to give at least Audio permission to participate in a battle. (If you wish to change permissions then reset the camera/microphone permissions in your browser and click the permission button again)</p>
+        <button id="permissionButton">Give Permission for Video and/or Audio</button>
+        <p class="text-danger"> WARNING: Your camera's light may turn on for a few seconds after giving permission to it and then will turn off. 
+          This is just to have your permission before you join a room. When joining a room you may be asked for permission again in which case you can simply accept or decline.</p>
       </div>
+
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">I understand</button>
       </div>
@@ -41,4 +48,11 @@
 <script>
     document.getElementById("warningCameraModal").click();
     document.getElementById("warningCameraModal").style.display = "none";
+
+    document.getElementById('permissionButton').addEventListener('click', () => {
+      // ask permission for audio and video
+      navigator.mediaDevices.getUserMedia({ audio: false, video: true });
+      navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    })
+
 </script>
