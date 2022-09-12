@@ -52,15 +52,15 @@ function main() {
     } else if (userMediaAccess.hasAudioReady && !userMediaAccess.hasVideoReady) {
         constraints = { audio: true, video: false };
 
-        document.getElementById('vidButton').remove();
+        document.getElementById('vidButton').style.display = 'none';
 
         startInit(constraints);
     } else {
         constraints = { audio: false, video: false };
 
-        document.getElementById('muteButton').remove();
-        document.getElementById('vidButton').remove();
-        document.getElementById('addUserToQueue').remove();
+        document.getElementById('muteButton').style.display = 'none';
+        document.getElementById('vidButton').style.display = 'none';
+        document.getElementById('addUserToQueue').style.display = 'none';
 
         init(constraints);
     }

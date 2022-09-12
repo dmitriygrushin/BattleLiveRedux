@@ -1684,7 +1684,6 @@ module.exports.rapEventLoopController = (socket, peers, localStream, constraints
 }
 
 },{}],6:[function(require,module,exports){
-
 const DetectRTC = require('detectrtc');
 DetectRTC.load(() => {
 /*
@@ -1738,9 +1737,17 @@ function main() {
         startInit(constraints);
     } else if (userMediaAccess.hasAudioReady && !userMediaAccess.hasVideoReady) {
         constraints = { audio: true, video: false };
+
+        document.getElementById('vidButton').style.display = 'none';
+
         startInit(constraints);
     } else {
         constraints = { audio: false, video: false };
+
+        document.getElementById('muteButton').style.display = 'none';
+        document.getElementById('vidButton').style.display = 'none';
+        document.getElementById('addUserToQueue').style.display = 'none';
+
         init(constraints);
     }
 
