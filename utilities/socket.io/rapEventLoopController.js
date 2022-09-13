@@ -140,63 +140,70 @@ async function countDown(io, socket, roomId, seconds, timerCount, rappers) {
             seconds--;
 
             if(seconds <= 0) {
+                const readyRapperCount = 10;
+                const rapCount = 30;
+                const voteCount = 20;
+                const announceWinnerCount = 15;
+                const getNextRappersReadyCount = 10; 
+                const endCount = 10; 
+
                 clearInterval(timer);
                 switch(timerCount) {
                     case 1:
-                        // get ready rapper1
                         if (await handleIfRappersLeftRoom(io, roomId)) {
-                            await countDown(io, socket, roomId, 10, 7, rappers);
+                            await countDown(io, socket, roomId, getNextRappersReadyCount, 7, rappers);
                             break;
                         }
-                        await countDown(io, socket, roomId, 5, ++timerCount, rappers);
+                        // get ready rapper1
+                        await countDown(io, socket, roomId, readyRapperCount, ++timerCount, rappers);
                         break;
                     case 2:
-                        // rapper1 turn
                         if (await handleIfRappersLeftRoom(io, roomId)) {
-                            await countDown(io, socket, roomId, 10, 7, rappers);
+                            await countDown(io, socket, roomId, getNextRappersReadyCount, 7, rappers);
                             break;
                         }
-                        await countDown(io, socket, roomId, 5, ++timerCount, rappers);
+                        // rapper1 turn
+                        await countDown(io, socket, roomId, rapCount, ++timerCount, rappers);
                         break;
                     case 3:
-                        // get ready rapper2
                         if (await handleIfRappersLeftRoom(io, roomId)) {
-                            await countDown(io, socket, roomId, 10, 7, rappers);
+                            await countDown(io, socket, roomId, getNextRappersReadyCount, 7, rappers);
                             break;
                         }
-                        await countDown(io, socket, roomId, 5, ++timerCount, rappers);
+                        // get ready rapper2
+                        await countDown(io, socket, roomId, readyRapperCount, ++timerCount, rappers);
                         break;
                     case 4:
-                        // rapper2 turn
                         if (await handleIfRappersLeftRoom(io, roomId)) {
-                            await countDown(io, socket, roomId, 10, 7, rappers);
+                            await countDown(io, socket, roomId, getNextRappersReadyCount, 7, rappers);
                             break;
                         }
-                        await countDown(io, socket, roomId, 5, ++timerCount, rappers);
+                        // rapper2 turn
+                        await countDown(io, socket, roomId, rapCount, ++timerCount, rappers);
                         break;
                     case 5:
-                        // vote
                         if (await handleIfRappersLeftRoom(io, roomId)) {
-                            await countDown(io, socket, roomId, 10, 7, rappers);
+                            await countDown(io, socket, roomId, getNextRappersReadyCount, 7, rappers);
                             break;
                         }
                         
+                        // vote
                         /**
                          * if both rappers are STILL in the room
                          */
-                        await countDown(io, socket, roomId, 10, ++timerCount, rappers);
+                        await countDown(io, socket, roomId, voteCount, ++timerCount, rappers);
                         io.to(roomId).emit('vote-rapper');
                         break;
                     case 6:
-                        // announce winner
                         // check that the rappers are in the room before calculating votes
                         if (await handleIfRappersLeftRoom(io, roomId)) {
-                            await countDown(io, socket, roomId, 10, 7, rappers);
+                            await countDown(io, socket, roomId, getNextRappersReadyCount, 7, rappers);
                             break;
                         }
 
+                        // announce winner
                         io.to(roomId).emit('winner-voted', await calculateRoomVotes(io, roomId));
-                        await countDown(io, socket, roomId, 10, ++timerCount, rappers);
+                        await countDown(io, socket, roomId, announceWinnerCount, ++timerCount, rappers);
                         break;
                     case 7:
                         // Getting next rappers ready...
@@ -206,11 +213,12 @@ async function countDown(io, socket, roomId, seconds, timerCount, rappers) {
                         await refreshRappers(io, socket, roomId);
                         io.to(roomId).emit('winner-voted', '_');
 
-                        await countDown(io, socket, roomId, 5, ++timerCount, rappers);
+                        await countDown(io, socket, roomId, getNextRappersReadyCount, ++timerCount, rappers);
                         break;
                     case 8:
+                        // end
                         io.to(roomId).emit('timer', 'Pending', '-1');
-                        await countDown(io, socket, roomId, 5, ++timerCount, rappers);
+                        await countDown(io, socket, roomId, endCount, ++timerCount, rappers);
                         break;
                 }
             }
