@@ -11,8 +11,7 @@ My application uses real-time video for maximum immersion in your rap-battle.
 
 
 --------------------
-## DEMO 
-https://youtu.be/-4kahnYDrvE [Youtube Video Demo (Before Removal of Heroku Free Tier)]
+## DEMO: https://youtu.be/-4kahnYDrvE [Youtube Video Demo]
 
 ~~https://battle-live.herokuapp.com/~~ [No more Heroku Free Tier :(]
 
